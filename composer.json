@@ -1,16 +1,16 @@
 {
-    "name": "daniel-km/omeka-s-module-bot-challenge",
-    "type": "omeka-s-module",
-    "description": "Module for Omeka S: Protects against automated bots using a self-hosted JavaScript challenge.",
+    "name": "daniel-km/omeka-plugin-bot-challenge",
+    "type": "omeka-plugin",
+    "description": "Plugin for Omeka: Protects against automated bots using a self-hosted JavaScript challenge.",
     "keywords": [
-        "Omeka S",
-        "Omeka S module",
+        "Omeka",
+        "Omeka plugin",
         "security",
         "bot",
         "ai"
     ],
     "license": "CECILL-2.1",
-    "homepage": "https://gitlab.com/Daniel-KM/Omeka-S-module-BotChallenge",
+    "homepage": "https://gitlab.com/Daniel-KM/Omeka-plugin-BotChallenge",
     "authors": [
         {
             "name": "Daniel Berthereau",
@@ -18,11 +18,11 @@
         }
     ],
     "support": {
-        "issues": "https://gitlab.com/Daniel-KM/Omeka-S-module-BotChallenge/-/issues",
+        "issues": "https://gitlab.com/Daniel-KM/Omeka-plugin-BotChallenge/-/issues",
         "forum": "https://forum.omeka.org/"
     },
-    "_require (not set until Omeka S merges PR #2412)": {
-        "omeka/omeka-s": "^4.0"
+    "_require (not set until Omeka merges PR #2412)": {
+        "omeka/omeka": "^3.0"
     },
     "autoload": {
         "psr-4": {
