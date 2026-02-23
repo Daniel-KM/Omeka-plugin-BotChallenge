@@ -1,6 +1,6 @@
 <?php
 /**
- * @var \Laminas\View\Renderer\PhpRenderer $this
+ * @var Omeka_View $this
  * @var string $token
  * @var int $delay
  * @var int $cookieLifetime
@@ -9,21 +9,16 @@
  * @var bool $testHeadless
  */
 
-$plugins = $this->getHelperPluginManager();
-$escape = $plugins->get('escapeHtml');
-$translate = $plugins->get('translate');
-$escapeAttr = $plugins->get('escapeHtmlAttr');
-
 // The styles follow Omeka S minimal layout colors (see application/view/error/).
 
 ?>
 <!DOCTYPE html>
-<html lang="<?= $escapeAttr($this->lang()) ?>">
+<html lang="<?= html_escape(get_html_lang()) ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title><?= $escape($translate('Verifying your browser')) ?></title>
+    <title><?= html_escape(__('Verifying your browser')) ?></title>
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -126,19 +121,19 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
     <div id="content" role="main">
         <noscript>
             <div id="noscript-box">
-                <h1><?= $escape($translate('JavaScript required')) ?></h1>
-                <p class="error"><?= $escape($translate('Please enable JavaScript in your browser to access this site.')) ?></p>
+                <h1><?= html_escape(__('JavaScript required')) ?></h1>
+                <p class="error"><?= html_escape(__('Please enable JavaScript in your browser to access this site.')) ?></p>
             </div>
         </noscript>
         <div id="challenge" style="display:none;">
             <div class="spinner" id="spinner"></div>
-            <h1><?= $escape($translate('Verifying your browser…')) ?></h1>
+            <h1><?= html_escape(__('Verifying your browser…')) ?></h1>
             <div class="countdown" id="countdown"></div>
-            <p class="status" id="status"><?= $escape($translate('This is an automatic process. Please wait.')) ?></p>
+            <p class="status" id="status"><?= html_escape(__('This is an automatic process. Please wait.')) ?></p>
         </div>
     </div>
     <footer>
-        <span><?= sprintf($translate('Powered by %s'), '<a href="https://omeka.org/s">Omeka S</a>') ?></span>
+        <span><?= sprintf(__('Powered by %s'), '<a href="https://omeka.org">Omeka</a>') ?></span>
     </footer>
     <script>
     (function() {
@@ -172,7 +167,7 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
                 spinnerEl.style.display = 'none';
                 countdownEl.textContent = '';
                 statusEl.className = 'status error';
-                statusEl.textContent = <?= json_encode($translate('Automated browser detected. Access denied.')) ?>;
+                statusEl.textContent = <?= json_encode(__('Automated browser detected. Access denied.')) ?>;
                 return;
             }
         }
@@ -192,7 +187,7 @@ $escapeAttr = $plugins->get('escapeHtmlAttr');
                     + '; samesite=Lax';
                 if (isHttps) cookie += '; secure';
                 document.cookie = cookie;
-                statusEl.textContent = <?= json_encode($translate('Verified. Redirecting…')) ?>;
+                statusEl.textContent = <?= json_encode(__('Verified. Redirecting…')) ?>;
                 window.location.href = redirectUrl;
             }
         }, 1000);
