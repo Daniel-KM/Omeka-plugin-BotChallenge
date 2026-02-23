@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-16 00:00+0000\n"
-"PO-Revision-Date: 2026-02-16 00:00+0000\n"
+"POT-Creation-Date: 2026-02-23 00:00+0000\n"
+"PO-Revision-Date: 2026-02-23 00:00+0000\n"
 "Last-Translator: Daniel Berthereau <Daniel.fr@Berthereau.net>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -13,83 +13,97 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.6\n"
 
-#: view/bot-challenge/index/index.phtml:26
+#: views/public/index/index.php:18
 msgid "Verifying your browser"
 msgstr "Vérification du navigateur"
 
-#: view/bot-challenge/index/index.phtml:129
+#: views/public/index/index.php:93
 msgid "JavaScript required"
 msgstr "JavaScript requis"
 
-#: view/bot-challenge/index/index.phtml:130
+#: views/public/index/index.php:94
 msgid "Please enable JavaScript in your browser to access this site."
-msgstr "Veuillez activer JavaScript dans votre navigateur pour accéder à ce site."
+msgstr ""
+"Veuillez activer JavaScript dans votre navigateur pour accéder à ce site."
 
-#: view/bot-challenge/index/index.phtml:135
+#: views/public/index/index.php:99
 msgid "Verifying your browser…"
 msgstr "Vérification du navigateur…"
 
-#: view/bot-challenge/index/index.phtml:137
+#: views/public/index/index.php:101
 msgid "This is an automatic process. Please wait."
-msgstr "Il s’agit d’un processus automatique. Veuillez patienter."
+msgstr "Il s'agit d'un processus automatique. Veuillez patienter."
 
-#: view/bot-challenge/index/index.phtml:141
+#: views/public/index/index.php:105
 #, php-format
 msgid "Powered by %s"
 msgstr "Propulsé par %s"
 
-#: view/bot-challenge/index/index.phtml:175
+#: views/public/index/index.php:137
 msgid "Automated browser detected. Access denied."
 msgstr "Navigateur automatisé détecté. Accès refusé."
 
-#: view/bot-challenge/index/index.phtml:195
+#: views/public/index/index.php:157
 msgid "Verified. Redirecting…"
 msgstr "Vérifié. Redirection…"
 
-#: src/Form/ConfigForm.php:18
+#: views/admin/plugins/bot-challenge-config-form.php:8
 msgid "HMAC salt"
 msgstr "Sel HMAC"
 
-#: src/Form/ConfigForm.php:19
-msgid "Secret salt used to generate challenge tokens. Leave empty to regenerate automatically. Changing this value invalidates all existing cookies."
-msgstr "Sel secret utilisé pour créer des jetons de défi. Laisser vide pour le régénérer automatiquement. La modification de cette valeur invalide tous les cookies existants."
+#: views/admin/plugins/bot-challenge-config-form.php:12
+msgid ""
+"Secret salt used to generate challenge tokens. Leave empty to regenerate "
+"automatically. Changing this value invalidates all existing cookies."
+msgstr ""
+"Sel secret utilisé pour créer des jetons de défi. Laisser vide pour le "
+"régénérer automatiquement. La modification de cette valeur invalide tous les "
+"cookies existants."
 
-#: src/Form/ConfigForm.php:29
+#: views/admin/plugins/bot-challenge-config-form.php:19
 msgid "Challenge delay (seconds)"
 msgstr "Délai du défi (secondes)"
 
-#: src/Form/ConfigForm.php:30
+#: views/admin/plugins/bot-challenge-config-form.php:23
 msgid "Number of seconds the visitor must wait before the cookie is set."
-msgstr "Nombre de secondes à attendre pour le visiteur vant de placer le cookie."
+msgstr ""
+"Nombre de secondes à attendre pour le visiteur vant de placer le cookie."
 
-#: src/Form/ConfigForm.php:42
+#: views/admin/plugins/bot-challenge-config-form.php:30
 msgid "Cookie lifetime (days)"
 msgstr "Durée de vie des cookies (jours)"
 
-#: src/Form/ConfigForm.php:43
+#: views/admin/plugins/bot-challenge-config-form.php:34
 msgid "Number of days the challenge cookie remains valid."
 msgstr "Nombre de jours pendant lesquels le cookie reste valide."
 
-#: src/Form/ConfigForm.php:55
+#: views/admin/plugins/bot-challenge-config-form.php:41
 msgid "Detect headless browsers"
 msgstr "Détecter les navigateurs sans tête"
 
-#: src/Form/ConfigForm.php:56
-msgid "Run additional tests to detect headless browsers (Selenium, PhantomJS, Puppeteer, etc.)."
-msgstr "Exécuter des tests supplémentaires pour détecter les navigateurs sans tête (Selenium, PhantomJS, Puppeteer, etc.)."
+#: views/admin/plugins/bot-challenge-config-form.php:45
+msgid ""
+"Run additional tests to detect headless browsers (Selenium, PhantomJS, "
+"Puppeteer, etc.)."
+msgstr ""
+"Exécuter des tests supplémentaires pour détecter les navigateurs sans tête "
+"(Selenium, PhantomJS, Puppeteer, etc.)."
 
-#: src/Form/ConfigForm.php:66
+#: views/admin/plugins/bot-challenge-config-form.php:52
 msgid "Exception paths"
 msgstr "Exceptions pour les chemins"
 
-#: src/Form/ConfigForm.php:67
-msgid "Url path prefixes to exclude from the challenge, one per line. Example: /api"
-msgstr "Préfixes de chemins d’url à exclure du défi, un par ligne. Exemple : /api"
+#: views/admin/plugins/bot-challenge-config-form.php:56
+msgid ""
+"Url path prefixes to exclude from the challenge, one per line. Example: /api"
+msgstr ""
+"Préfixes de chemins d'url à exclure du défi, un par ligne. Exemple : /api"
 
-#: src/Form/ConfigForm.php:78
+#: views/admin/plugins/bot-challenge-config-form.php:63
 msgid "Exception IPs"
 msgstr "Exceptions pour les ips"
 
-#: src/Form/ConfigForm.php:79
-msgid "Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line."
+#: views/admin/plugins/bot-challenge-config-form.php:67
+msgid ""
+"Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line."
 msgstr "Plages ips v4 ou v6 ou cidr à exclure du défi, une par ligne."
