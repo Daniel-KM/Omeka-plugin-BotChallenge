@@ -1,21 +1,18 @@
-<?php declare(strict_types=1);
-
-namespace BotChallengeTest\Mvc;
-
-use PHPUnit\Framework\TestCase;
+<?php
 
 /**
- * Tests for the HMAC token logic shared between MvcListeners and IndexController.
+ * Tests for the HMAC token logic shared between the Challenge plugin
+ * and IndexController.
  *
  * Token formula: microtime() . '_' . hash_hmac('sha256', $salt . $microtime, $salt)
  *
- * @covers \BotChallenge\Mvc\MvcListeners::handleChallenge
- * @covers \BotChallenge\Controller\IndexController::indexAction
+ * @covers BotChallenge_Controller_Plugin_Challenge::routeShutdown
+ * @covers BotChallenge_IndexController::indexAction
  */
-class TokenTest extends TestCase
+class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
 {
     /**
-     * Generate a token using the same formula as the module.
+     * Generate a token using the same formula as the plugin.
      */
     protected function generateToken(string $salt, string $timestamp): string
     {
@@ -60,7 +57,7 @@ class TokenTest extends TestCase
     {
         $token = $this->generateToken('any-salt', '0.12345678 1700000000');
         // Format: "microtime_hmac" where hmac is 64 hex chars.
-        $this->assertMatchesRegularExpression('/^[\d.]+ \d+_[0-9a-f]{64}$/', $token);
+        $this->assertRegExp('/^[\d.]+ \d+_[0-9a-f]{64}$/', $token);
     }
 
     public function testValidation(): void
@@ -69,7 +66,7 @@ class TokenTest extends TestCase
         $ts = (string) microtime();
         $token = $this->generateToken($salt, $ts);
 
-        // Parse like MvcListeners does.
+        // Parse like the Challenge plugin does.
         $pos = strrpos($token, '_');
         $this->assertNotFalse($pos);
         $parsedTs = substr($token, 0, $pos);
@@ -114,6 +111,6 @@ class TokenTest extends TestCase
     public function testEmptySaltStillProducesValidToken(): void
     {
         $token = $this->generateToken('', '0.12345678 1700000000');
-        $this->assertMatchesRegularExpression('/^[\d.]+ \d+_[0-9a-f]{64}$/', $token);
+        $this->assertRegExp('/^[\d.]+ \d+_[0-9a-f]{64}$/', $token);
     }
 }

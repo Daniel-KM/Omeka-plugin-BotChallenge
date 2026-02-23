@@ -4,17 +4,17 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/9.5/phpunit.xsd"
     colors="true"
-    backupGlobals="false"
+    backupGlobals="true"
     bootstrap="./tests/bootstrap.php"
     >
     <testsuites>
-        <!-- Unit tests that don't need Application (fast) -->
+        <!-- Unit tests that don't need the Omeka application (fast) -->
         <testsuite name="unit">
-            <file>tests/BotChallengeTest/Mvc/IpInCidrTest.php</file>
-            <file>tests/BotChallengeTest/Mvc/GetClientIpTest.php</file>
-            <file>tests/BotChallengeTest/Mvc/TokenTest.php</file>
+            <file>tests/BotChallengeTest/IpInCidrTest.php</file>
+            <file>tests/BotChallengeTest/GetClientIpTest.php</file>
+            <file>tests/BotChallengeTest/TokenTest.php</file>
         </testsuite>
-        <!-- Controller tests (HTTP dispatch) -->
+        <!-- Controller tests (need full Omeka app + test database) -->
         <testsuite name="controller">
             <directory suffix="Test.php">tests/BotChallengeTest/Controller</directory>
         </testsuite>

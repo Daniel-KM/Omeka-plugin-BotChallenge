@@ -1,24 +1,20 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace BotChallengeTest\Mvc;
-
-use Omeka\Settings\Settings;
-use PHPUnit\Framework\TestCase;
+require_once __DIR__ . '/TestableChallenge.php';
 
 /**
- * @covers \BotChallenge\Mvc\MvcListeners::ipInCidr
+ * @covers BotChallenge_Controller_Plugin_Challenge::ipInCidr
  */
-class IpInCidrTest extends TestCase
+class BotChallengeTest_IpInCidrTest extends PHPUnit\Framework\TestCase
 {
     /**
-     * @var TestableMvcListeners
+     * @var BotChallengeTest_TestableChallenge
      */
-    protected $listener;
+    protected $challenge;
 
     public function setUp(): void
     {
-        $settings = $this->createMock(Settings::class);
-        $this->listener = new TestableMvcListeners($settings);
+        $this->challenge = new BotChallengeTest_TestableChallenge();
     }
 
     /**
@@ -28,7 +24,7 @@ class IpInCidrTest extends TestCase
     {
         $this->assertSame(
             $expected,
-            $this->listener->publicIpInCidr($ip, $cidr),
+            $this->challenge->publicIpInCidr($ip, $cidr),
             sprintf('ipInCidr("%s", "%s") should return %s', $ip, $cidr, $expected ? 'true' : 'false')
         );
     }
