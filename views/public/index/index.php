@@ -9,7 +9,7 @@
  * @var bool $testHeadless
  */
 
-// The styles follow Omeka S minimal layout colors (see application/view/error/).
+// The styles follow Omeka minimal layout colors (see application/views/scripts/error/).
 
 ?>
 <!DOCTYPE html>
@@ -27,11 +27,11 @@
         }
 
         body {
-            font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 16px;
-            line-height: 24px;
-            background-color: #404E61;
-            color: #676767;
+            font-family: "Lato", sans-serif;
+            font-size: 14px;
+            line-height: 1.5em;
+            background: #F5f5f5;
+            color: #232323;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -40,17 +40,19 @@
         }
 
         #content {
-            background: #fff;
+            background: white;
             padding: 48px;
             width: 100%;
             max-width: 480px;
             text-align: center;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            font-size: 20px;
-            line-height: 24px;
-            color: #404E61;
+            font-weight: 700;
+            font-size: 24px;
+            line-height: 30px;
+            color: #939393;
             margin-bottom: 12px;
         }
 
@@ -59,7 +61,7 @@
             height: 40px;
             margin: 0 auto 24px;
             border: 4px solid #dfdfdf;
-            border-top-color: #404E61;
+            border-top-color: #003576;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -68,23 +70,23 @@
         .countdown {
             font-size: 32px;
             font-weight: bold;
-            color: #404E61;
+            color: #003576;
             margin: 12px 0;
         }
 
         .status {
-            color: #676767;
+            color: #666;
             font-size: 14px;
         }
         .error {
-            color: #A91919;
+            color: #914E33;
         }
 
         noscript #noscript-box {
             display: block;
         }
         #noscript-box {
-            border-left: 4px solid #A91919;
+            border-left: 4px solid #914E33;
             text-align: left;
             padding-left: 12px;
         }
@@ -97,14 +99,15 @@
             text-align: center;
             padding: 6px;
             font-size: 12px;
-            color: rgba(255,255,255,.5);
+            color: #939393;
         }
         footer a {
-            color: rgba(255,255,255,.7);
+            color: #003576;
             text-decoration: none;
+            transition: 0.5s all;
         }
         footer a:hover {
-            color: #fff;
+            color: #000710;
         }
 
         @media (max-width: 600px) {
