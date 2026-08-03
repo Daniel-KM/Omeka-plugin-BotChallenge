@@ -103,7 +103,69 @@ msgstr ""
 msgid "Exception IPs"
 msgstr "Exceptions pour les ips"
 
-#: views/admin/plugins/bot-challenge-config-form.php:67
-msgid ""
-"Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line."
-msgstr "Plages ips v4 ou v6 ou cidr à exclure du défi, une par ligne."
+#: views/admin/plugins/bot-challenge-config-form.php:63
+msgid "Exempted search engines"
+msgstr "Moteurs de recherche exemptés"
+
+#: views/admin/plugins/bot-challenge-config-form.php:72
+msgid "Search engines whose published ip ranges are excluded from the challenge. Without exemption, they receive the javascript challenge, do not solve it, and stop indexing the site. The ranges are bundled with the plugin and may be updated with the job below."
+msgstr "Les moteurs de recherche dont les plages d’adresses ip publiées sont exclues du défi. À moins d’une dérogation, ils reçoivent le défi JavaScript, ne le résolvent pas et cessent d’indexer le site. Ces plages sont intégrées à l’extension et peuvent être mises à jour à l’aide de la tâche ci-dessous."
+
+#: views/admin/plugins/bot-challenge-config-form.php:80
+msgid "Update the ip ranges now"
+msgstr "Mettre à jour les plages d’adresses ip maintenant"
+
+#: views/admin/plugins/bot-challenge-config-form.php:86
+msgid "Run a job to fetch the ip ranges from the sources of the search engines. A source that is unreachable or truncated is skipped and the bundled ranges are kept."
+msgstr "Lancer une tâche pour récupérer les plages d’adresses ip à partir des sources des moteurs de recherche. Les sources inaccessibles ou incomplètes sont ignorées et les plages intégrées sont conservées."
+
+#: views/admin/plugins/bot-challenge-config-form.php:97
+msgid "Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line: the networks of the institution, a partner harvester, a specific bot. They are added to the ranges of the search engines above."
+msgstr "Plages ip v4, v6 ou cidr à exclure du défi, une par ligne : les réseaux de l’établissement, d’un collecteur partenaire, d’un bot spécifique. Elles s’ajoutent aux plages des moteurs de recherche mentionnés ci-dessus."
+
+#: libraries/BotChallenge/Job/RefreshBotIps.php:39
+msgid "BotChallenge: the source of %1$s is unreachable or truncated (%2$s): the previous ranges are kept."
+msgstr "BotChallenge : la source de %1$s est inaccessible ou incomplète (%2$s) : les plages précédentes sont conservées."
+
+#: libraries/BotChallenge/Job/RefreshBotIps.php:55
+msgid "BotChallenge: %1$d ranges updated for %2$s."
+msgstr "BotChallenge : %1$d plages mises à jour pour %2$s."
+
+#: libraries/BotChallenge/Job/RefreshBotIps.php:73
+msgid "BotChallenge: %d source(s) refreshed."
+msgstr "BotChallenge : %d source(s) actualisée(s)."
+
+#: libraries/BotChallenge/BotIps.php:33
+msgid "Googlebot (Google)"
+msgstr "Googlebot (Google)"
+
+#: libraries/BotChallenge/BotIps.php:38
+msgid "Bingbot (Microsoft)"
+msgstr "Bingbot (Microsoft)"
+
+#: libraries/BotChallenge/BotIps.php:43
+msgid "Applebot (Apple)"
+msgstr "Applebot (Apple)"
+
+#: libraries/BotChallenge/BotIps.php:48
+msgid "DuckDuckBot (DuckDuckGo)"
+msgstr "DuckDuckBot (DuckDuckGo)"
+
+#: libraries/BotChallenge/BotIps.php:56
+msgid "Qwant"
+msgstr "Qwant"
+
+#: libraries/BotChallenge/BotIps.php:60
+msgid "MojeekBot (Mojeek)"
+msgstr "MojeekBot (Mojeek)"
+
+#: libraries/BotChallenge/BotIps.php:64
+msgid "Marginalia"
+msgstr "Marginalia"
+
+#: libraries/BotChallenge/BotIps.php:68
+msgid "Yandex"
+msgstr "Yandex"
+
+#~ msgid "Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line."
+#~ msgstr "Plages ips v4 ou v6 ou cidr à exclure du défi, une par ligne."

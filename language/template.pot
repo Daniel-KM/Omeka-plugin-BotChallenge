@@ -99,7 +99,66 @@ msgstr ""
 msgid "Exception IPs"
 msgstr ""
 
-#: views/admin/plugins/bot-challenge-config-form.php:67
-msgid ""
-"Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line."
+#: views/admin/plugins/bot-challenge-config-form.php:63
+msgid "Exempted search engines"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:72
+msgid "Search engines whose published ip ranges are excluded from the challenge. Without exemption, they receive the javascript challenge, do not solve it, and stop indexing the site. The ranges are bundled with the plugin and may be updated with the job below."
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:80
+msgid "Update the ip ranges now"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:86
+msgid "Run a job to fetch the ip ranges from the sources of the search engines. A source that is unreachable or truncated is skipped and the bundled ranges are kept."
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:97
+msgid "Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line: the networks of the institution, a partner harvester, a specific bot. They are added to the ranges of the search engines above."
+msgstr ""
+
+#: libraries/BotChallenge/Job/RefreshBotIps.php:39
+msgid "BotChallenge: the source of %1$s is unreachable or truncated (%2$s): the previous ranges are kept."
+msgstr ""
+
+#: libraries/BotChallenge/Job/RefreshBotIps.php:55
+msgid "BotChallenge: %1$d ranges updated for %2$s."
+msgstr ""
+
+#: libraries/BotChallenge/Job/RefreshBotIps.php:73
+msgid "BotChallenge: %d source(s) refreshed."
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:33
+msgid "Googlebot (Google)"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:38
+msgid "Bingbot (Microsoft)"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:43
+msgid "Applebot (Apple)"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:48
+msgid "DuckDuckBot (DuckDuckGo)"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:56
+msgid "Qwant"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:60
+msgid "MojeekBot (Mojeek)"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:64
+msgid "Marginalia"
+msgstr ""
+
+#: libraries/BotChallenge/BotIps.php:68
+msgid "Yandex"
 msgstr ""
