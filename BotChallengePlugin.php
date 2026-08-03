@@ -21,6 +21,10 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         // challenge is meaningless or harmful.
         'botchallenge_exception_paths' => self::DEFAULT_EXCEPTION_PATHS,
         'botchallenge_exception_ips' => '',
+        'botchallenge_exception_bots' => '[]',
+        // Ranges of the exempted bots and manual ranges, merged when the config
+        // is saved and read on each request.
+        'botchallenge_exception_ips_all' => '[]',
     );
 
     /**
@@ -33,6 +37,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         $this->_installOptions();
         // Generate a random salt.
         set_option('botchallenge_salt', bin2hex(random_bytes(32)));
+        $this->_saveBots(BotChallenge_BotIps::DEFAULT_BOTS, '');
     }
 
     public function hookUninstall()
@@ -50,6 +55,9 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
             $paths = array_unique(array_merge($paths, array_filter(explode("\n", self::DEFAULT_EXCEPTION_PATHS))));
             sort($paths);
             set_option('botchallenge_exception_paths', implode("\n", $paths));
+
+            // The ip ranges of the search engines are now bundled.
+            $this->_saveBots(BotChallenge_BotIps::DEFAULT_BOTS, (string) get_option('botchallenge_exception_ips'));
         }
     }
 
@@ -95,6 +103,30 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         set_option('botchallenge_cookie_lifetime', (int) $post['botchallenge_cookie_lifetime']);
         set_option('botchallenge_test_headless', isset($post['botchallenge_test_headless']) ? 1 : 0);
         set_option('botchallenge_exception_paths', trim($post['botchallenge_exception_paths'] ?? ''));
-        set_option('botchallenge_exception_ips', trim($post['botchallenge_exception_ips'] ?? ''));
+
+        $exceptionIps = trim($post['botchallenge_exception_ips'] ?? '');
+        set_option('botchallenge_exception_ips', $exceptionIps);
+
+        $bots = array_values(array_intersect(
+            (array) ($post['botchallenge_exception_bots'] ?? array()),
+            array_keys(BotChallenge_BotIps::BOTS)
+        ));
+        $this->_saveBots($bots, $exceptionIps);
+    }
+
+    /**
+     * Save the exempted bots and merge their ranges with the manual ones.
+     *
+     * The ranges of the bots (bundled files) and the manual ones are merged
+     * once here, so the check of each request reads a single list.
+     */
+    protected function _saveBots(array $bots, $exceptionIps)
+    {
+        $exceptionIps = array_filter(array_map('trim', explode("\n", (string) $exceptionIps)));
+        set_option('botchallenge_exception_bots', json_encode(array_values($bots)));
+        set_option('botchallenge_exception_ips_all', json_encode(array_values(array_unique(array_merge(
+            BotChallenge_BotIps::ipsForBots($bots),
+            $exceptionIps
+        )))));
     }
 }

@@ -67,12 +67,29 @@
 
     <div class="field">
         <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_exception_bots', __('Exempted search engines')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formMultiCheckbox(
+                'botchallenge_exception_bots[]',
+                json_decode((string) get_option('botchallenge_exception_bots'), true) ?: array(),
+                array('id' => 'botchallenge_exception_bots'),
+                array_map('__', BotChallenge_BotIps::valueOptions())
+            ) ?>
+            <p class="explanation">
+                <?= __('Search engines whose published ip ranges are excluded from the challenge. Without exemption, they receive the javascript challenge, do not solve it, and stop indexing the site. The ranges are bundled with the plugin.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
             <?= $this->formLabel('botchallenge_exception_ips', __('Exception IPs')) ?>
         </div>
         <div class="inputs five columns omega">
             <?= $this->formTextarea('botchallenge_exception_ips', get_option('botchallenge_exception_ips'), array('id' => 'botchallenge_exception_ips', 'rows' => 5, 'cols' => 60)) ?>
             <p class="explanation">
-                <?= __('Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line.') ?>
+                <?= __('Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line: the networks of the institution, a partner harvester, a specific bot. They are added to the ranges of the search engines above.') ?>
             </p>
         </div>
     </div>

@@ -57,8 +57,12 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
 
         // Skip exception IPs.
         $clientIp = $this->getClientIp();
-        $exceptionIps = get_option('botchallenge_exception_ips') ?: '';
-        $exceptionIps = array_filter(array_map('trim', explode("\n", $exceptionIps)));
+        // The merged list is prepared when the config is saved; fall back to
+        // the manual ranges when the config was never saved.
+        $exceptionIps = json_decode((string) get_option('botchallenge_exception_ips_all'), true) ?: null;
+        if ($exceptionIps === null) {
+            $exceptionIps = array_filter(array_map('trim', explode("\n", (string) get_option('botchallenge_exception_ips'))));
+        }
         foreach ($exceptionIps as $exceptionIp) {
             if ($exceptionIp !== '' && $this->ipInCidr($clientIp, $exceptionIp)) {
                 return;
