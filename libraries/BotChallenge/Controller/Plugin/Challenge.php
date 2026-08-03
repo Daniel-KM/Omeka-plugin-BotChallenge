@@ -30,6 +30,11 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             return;
         }
 
+        // Skip authenticated users.
+        if (current_user()) {
+            return;
+        }
+
         $requestUri = $request->getRequestUri();
         $basePath = $request->getBaseUrl();
         $path = $requestUri;
