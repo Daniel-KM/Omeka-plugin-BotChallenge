@@ -43,7 +43,14 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
         $exceptionPaths = get_option('botchallenge_exception_paths') ?: '';
         $exceptionPaths = array_filter(array_map('trim', explode("\n", $exceptionPaths)));
         foreach ($exceptionPaths as $exceptionPath) {
-            if ($exceptionPath !== '' && strpos($pathOnly, $exceptionPath) === 0) {
+            // Compare on a segment boundary with final "/".
+            $exceptionPath = rtrim((string) $exceptionPath, '/');
+            if ($exceptionPath === '') {
+                continue;
+            }
+            if ($pathOnly === $exceptionPath
+                || strpos($pathOnly, $exceptionPath . '/') === 0
+            ) {
                 return;
             }
         }
