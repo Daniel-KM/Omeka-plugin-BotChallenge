@@ -22,6 +22,8 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         'botchallenge_exception_paths' => self::DEFAULT_EXCEPTION_PATHS,
         'botchallenge_exception_ips' => '',
         'botchallenge_exception_bots' => '[]',
+        // Ranges refreshed from the sources, by bot.
+        'botchallenge_bot_ips' => '[]',
         // Ranges of the exempted bots and manual ranges, merged when the config
         // is saved and read on each request.
         'botchallenge_exception_ips_all' => '[]',
@@ -112,20 +114,29 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
             array_keys(BotChallenge_BotIps::BOTS)
         ));
         $this->_saveBots($bots, $exceptionIps);
+
+        if (!empty($post['botchallenge_refresh_ips'])) {
+            Zend_Registry::get('bootstrap')->getResource('jobs')
+                ->sendLongRunning('BotChallenge_Job_RefreshBotIps');
+        }
     }
 
     /**
      * Save the exempted bots and merge their ranges with the manual ones.
      *
-     * The ranges of the bots (bundled files) and the manual ones are merged
-     * once here, so the check of each request reads a single list.
+     * The ranges of the bots (bundled files or the base override refreshed by
+     * the job) and the manual ones are merged once here, so the check of each
+     * request reads a single list.
      */
     protected function _saveBots(array $bots, $exceptionIps)
     {
         $exceptionIps = array_filter(array_map('trim', explode("\n", (string) $exceptionIps)));
+        // The bundled files may be overridden by the ranges refreshed by the
+        // job and stored in the options.
+        $override = json_decode((string) get_option('botchallenge_bot_ips'), true) ?: array();
         set_option('botchallenge_exception_bots', json_encode(array_values($bots)));
         set_option('botchallenge_exception_ips_all', json_encode(array_values(array_unique(array_merge(
-            BotChallenge_BotIps::ipsForBots($bots),
+            BotChallenge_BotIps::ipsForBots($bots, $override),
             $exceptionIps
         )))));
     }

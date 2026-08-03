@@ -77,7 +77,19 @@
                 array_map('__', BotChallenge_BotIps::valueOptions())
             ) ?>
             <p class="explanation">
-                <?= __('Search engines whose published ip ranges are excluded from the challenge. Without exemption, they receive the javascript challenge, do not solve it, and stop indexing the site. The ranges are bundled with the plugin.') ?>
+                <?= __('Search engines whose published ip ranges are excluded from the challenge. Without exemption, they receive the javascript challenge, do not solve it, and stop indexing the site. The ranges are bundled with the plugin and may be updated with the job below.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_refresh_ips', __('Update the ip ranges now')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formCheckbox('botchallenge_refresh_ips', null, array('id' => 'botchallenge_refresh_ips'), array('1', '0')) ?>
+            <p class="explanation">
+                <?= __('Run a job to fetch the ip ranges from the sources of the search engines. A source that is unreachable or truncated is skipped and the bundled ranges are kept.') ?>
             </p>
         </div>
     </div>
