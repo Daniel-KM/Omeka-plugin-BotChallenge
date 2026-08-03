@@ -5,6 +5,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_hooks = array(
         'install',
         'uninstall',
+        'upgrade',
         'initialize',
         'config_form',
         'config',
@@ -16,9 +17,16 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         'botchallenge_delay' => 5,
         'botchallenge_cookie_lifetime' => 90,
         'botchallenge_test_headless' => 1,
-        'botchallenge_exception_paths' => '/api',
+        // Machine endpoints and token authorized links, where a browser
+        // challenge is meaningless or harmful.
+        'botchallenge_exception_paths' => self::DEFAULT_EXCEPTION_PATHS,
         'botchallenge_exception_ips' => '',
     );
+
+    /**
+     * Paths opened by default, one per line.
+     */
+    const DEFAULT_EXCEPTION_PATHS = "/api\n/files\n/iiif\n/iiif-presentation\n/oai-pmh-repository\n/sitemap.xml";
 
     public function hookInstall()
     {
@@ -30,6 +38,19 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
     public function hookUninstall()
     {
         $this->_uninstallOptions();
+    }
+
+    public function hookUpgrade($args)
+    {
+        $oldVersion = $args['old_version'];
+
+        if (version_compare($oldVersion, '2.4.0', '<')) {
+            // New default exception paths.
+            $paths = array_filter(array_map('trim', explode("\n", (string) get_option('botchallenge_exception_paths'))));
+            $paths = array_unique(array_merge($paths, array_filter(explode("\n", self::DEFAULT_EXCEPTION_PATHS))));
+            sort($paths);
+            set_option('botchallenge_exception_paths', implode("\n", $paths));
+        }
     }
 
     public function hookInitialize()
