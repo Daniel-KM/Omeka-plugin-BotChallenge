@@ -13,6 +13,7 @@
             <file>tests/BotChallengeTest/IpInCidrTest.php</file>
             <file>tests/BotChallengeTest/GetClientIpTest.php</file>
             <file>tests/BotChallengeTest/TokenTest.php</file>
+            <file>tests/BotChallengeTest/BotIpsTest.php</file>
         </testsuite>
         <!-- Controller tests (need full Omeka app + test database) -->
         <testsuite name="controller">
