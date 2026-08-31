@@ -15,7 +15,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
     protected $_options = array(
         'botchallenge_salt' => '',
         'botchallenge_delay' => 5,
-        'botchallenge_cookie_lifetime' => 90,
+        'botchallenge_cookie_lifetime' => 7,
         'botchallenge_test_headless' => 1,
         // Machine endpoints and token authorized links, where a browser
         // challenge is meaningless or harmful.

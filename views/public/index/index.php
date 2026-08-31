@@ -1,9 +1,8 @@
 <?php
 /**
  * @var Omeka_View $this
- * @var string $token
+ * @var string $nonce
  * @var int $delay
- * @var int $cookieLifetime
  * @var string $redirectUrl
  * @var bool $isHttps
  * @var bool $testHeadless
@@ -140,9 +139,8 @@
     </footer>
     <script>
     (function() {
-        var token = <?= json_encode($token) ?>;
+        var nonce = <?= json_encode($nonce) ?>;
         var delay = <?= (int) $delay ?>;
-        var cookieLifetime = <?= (int) $cookieLifetime ?>;
         var redirectUrl = <?= json_encode($redirectUrl) ?>;
         var isHttps = <?= $isHttps ? 'true' : 'false' ?>;
         var testHeadless = <?= $testHeadless ? 'true' : 'false' ?>;
@@ -185,13 +183,25 @@
                 clearInterval(interval);
                 countdownEl.textContent = '';
                 spinnerEl.style.display = 'none';
-                var cookie = 'omeka_bot_challenge=' + token
-                    + '; path=/; max-age=' + cookieLifetime
-                    + '; samesite=Lax';
-                if (isHttps) cookie += '; secure';
-                document.cookie = cookie;
-                statusEl.textContent = <?= json_encode(__('Verified. Redirecting…')) ?>;
-                window.location.href = redirectUrl;
+                // The cookie is delivered by the server, once it checked the
+                // nonce: the client cannot forge it by itself.
+                var body = new FormData();
+                body.append('nonce', nonce);
+                fetch(window.location.pathname, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'}
+                })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('denied');
+                        statusEl.textContent = <?= json_encode(__('Verified. Redirecting…')) ?>;
+                        window.location.href = redirectUrl;
+                    })
+                    .catch(function () {
+                        statusEl.className = 'status error';
+                        statusEl.textContent = <?= json_encode(__('Verification failed. Reload the page to try again.')) ?>;
+                    });
             }
         }, 1000);
     })();

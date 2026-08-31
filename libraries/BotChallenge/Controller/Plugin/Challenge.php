@@ -74,22 +74,30 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             }
         }
 
-        // Check cookie: format is "{microtime}_{hmac}".
+        // Check cookie: format is "{timestamp}_{hmac}".
         $cookieValue = isset($_COOKIE['omeka_bot_challenge'])
             ? $_COOKIE['omeka_bot_challenge']
             : '';
         $pos = strrpos($cookieValue, '_');
         if ($pos !== false) {
-            $salt = get_option('botchallenge_salt') ?: '';
-            $cookieLifetime = (int) get_option('botchallenge_cookie_lifetime') * 86400;
+            $salt = (string) get_option('botchallenge_salt');
+            $cookieLifetime = ((int) get_option('botchallenge_cookie_lifetime') ?: 7) * 86400;
             $timestamp = substr($cookieValue, 0, $pos);
             $hmac = substr($cookieValue, $pos + 1);
-            $expectedHmac = hash_hmac('sha256', $salt . $timestamp, $salt);
-            // microtime() format: "0.12345678 1234567890".
-            $seconds = (int) substr($timestamp, strpos($timestamp, ' ') + 1);
+            $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
+            $expectedHmac = BotChallenge_IndexController::signature($timestamp, $userAgent, $salt);
+            $age = time() - (int) $timestamp;
             if (hash_equals($expectedHmac, $hmac)
-                && time() - $seconds <= $cookieLifetime
+                && $age >= 0
+                && $age <= $cookieLifetime
             ) {
+                // Sliding window: the lifetime is sealed in the cookie, so a
+                // regular visitor would be challenged again on a fixed date
+                // whatever its activity. Renew it once it is half spent, so
+                // only an inactive visitor is challenged again.
+                if ($age > $cookieLifetime / 2) {
+                    $this->renewCookie($basePath, $salt, $userAgent, $cookieLifetime);
+                }
                 return;
             }
         }
@@ -100,6 +108,33 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             ->setRedirect($url, 302)
             ->sendResponse();
         exit;
+    }
+
+    /**
+     * Renew the cookie of a visitor that is still active.
+     */
+    protected function renewCookie($basePath, $salt, $userAgent, $cookieLifetime)
+    {
+        $timestamp = (string) time();
+        $token = $timestamp . '_'
+            . BotChallenge_IndexController::signature($timestamp, $userAgent, $salt);
+
+        $isHttps = false;
+        if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
+            $isHttps = true;
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+            $isHttps = strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https';
+        } elseif (($_SERVER['SERVER_PORT'] ?? null) === '443') {
+            $isHttps = true;
+        }
+
+        setcookie('omeka_bot_challenge', $token, array(
+            'expires' => time() + $cookieLifetime,
+            'path' => rtrim((string) $basePath, '/') . '/',
+            'secure' => $isHttps,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ));
     }
 
     /**
