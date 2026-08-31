@@ -7,6 +7,14 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
      */
     const NONCE_LIFETIME = 600;
 
+    /**
+     * Margin allowed on the challenge delay.
+     *
+     * The nonce time and the check are in seconds, so an answer sent right on
+     * time may be counted one second short.
+     */
+    const DELAY_TOLERANCE = 1;
+
     public function indexAction()
     {
         // The cookie is delivered by verify() only, after the client posted
@@ -86,12 +94,24 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
         unset($session->nonce, $session->nonceTime);
 
         $posted = (string) $this->getRequest()->getPost('nonce', '');
+        $elapsed = time() - $nonceTime;
         if ($expected === ''
             || !hash_equals($expected, $posted)
-            || time() - $nonceTime > self::NONCE_LIFETIME
+            || $elapsed > self::NONCE_LIFETIME
         ) {
             $response->setHttpResponseCode(403);
             $response->setBody(json_encode(array('status' => 'error')));
+            return $response;
+        }
+
+        // The delay is checked here too: the countdown of the page is run by
+        // the client, so without this check it is only a decoration and a
+        // client posting the nonce immediately gets the cookie. The nonce is
+        // consumed above, so a new challenge page is required to retry.
+        $delay = (int) get_option('botchallenge_delay') ?: 5;
+        if (self::isTooEarly($elapsed, $delay)) {
+            $response->setHttpResponseCode(403);
+            $response->setBody(json_encode(array('status' => 'too_early')));
             return $response;
         }
 
@@ -111,6 +131,17 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
         ));
         $response->setBody(json_encode(array('status' => 'success')));
         return $response;
+    }
+
+    /**
+     * Check that the challenge was not answered before its delay.
+     *
+     * The tolerance covers the second used for the times: an answer sent right
+     * on time may be counted one second short.
+     */
+    public static function isTooEarly($elapsed, $delay)
+    {
+        return $elapsed < $delay - self::DELAY_TOLERANCE;
     }
 
     /**
