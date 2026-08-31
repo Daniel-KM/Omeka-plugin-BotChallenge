@@ -52,7 +52,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
     {
         $oldVersion = $args['old_version'];
 
-        if (version_compare($oldVersion, '2.4.0', '<')) {
+        if (version_compare($oldVersion, '2.3.2', '<')) {
             // New default exception paths.
             $paths = array_filter(array_map('trim', explode("\n", (string) get_option('botchallenge_exception_paths'))));
             $paths = array_unique(array_merge($paths, array_filter(explode("\n", self::DEFAULT_EXCEPTION_PATHS))));
@@ -62,6 +62,48 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
             // The ip ranges of the search engines are now bundled.
             $this->_saveBots(BotChallenge_BotIps::DEFAULT_BOTS, (string) get_option('botchallenge_exception_ips'));
         }
+
+        if (version_compare($oldVersion, '2.3.4', '<')) {
+            // The cookie is now signed with the user agent and renewed once
+            // half of its lifetime is spent, so a short lifetime no longer
+            // challenges an active visitor again. Ninety days turned a single
+            // leaked cookie into a nearly permanent access for a whole botnet.
+            $oldLifetime = (int) get_option('botchallenge_cookie_lifetime');
+            $newLifetime = (int) $this->_options['botchallenge_cookie_lifetime'];
+            if ($oldLifetime !== $newLifetime) {
+                set_option('botchallenge_cookie_lifetime', $newLifetime);
+                $this->_flash(sprintf(
+                    __('The lifetime of the challenge cookie was changed from %1$s to %2$s days, because the cookie is now renewed automatically as long as the visitor is active. The previous value (%1$s days) can be set again in the config of the plugin.'),
+                    $oldLifetime,
+                    $newLifetime
+                ));
+            }
+
+            $this->_flash(__('The existing challenge cookies are invalid: each visitor will pass the challenge once again. This is wanted, since a cookie obtained before this version was usable by any client.'));
+        }
+
+        // The options added by a new version are not written by install(), that
+        // runs only once, so add the ones missing. Done on each upgrade, so an
+        // option added later is never forgotten.
+        foreach ($this->_options as $key => $value) {
+            if ($key !== 'botchallenge_salt' && get_option($key) === null) {
+                set_option($key, $value);
+            }
+        }
+
+        // An empty salt would sign every cookie the same way.
+        if (!get_option('botchallenge_salt')) {
+            set_option('botchallenge_salt', bin2hex(random_bytes(32)));
+        }
+    }
+
+    /**
+     * Add a message displayed after the upgrade.
+     */
+    protected function _flash($message)
+    {
+        Zend_Controller_Action_HelperBroker::getStaticHelper('FlashMessenger')
+            ->addMessage($message, 'alert');
     }
 
     public function hookInitialize()
