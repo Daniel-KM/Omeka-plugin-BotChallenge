@@ -18,7 +18,13 @@ set_include_path(
 require_once 'Zend/Loader/Autoloader.php';
 Zend_Loader_Autoloader::getInstance();
 
-// Autoload the plugin library class (needed for unit tests).
+// Load the parent of the plugin controller. The namespace "Omeka_" is not
+// registered in the autoloader: the action helpers live in another directory,
+// so the autoloader would fail on them before the helper broker resolves them.
+require_once $omekaRoot . '/application/libraries/Omeka/Controller/AbstractActionController.php';
+
+// Autoload the plugin library classes (needed for unit tests).
+require_once dirname(__DIR__) . '/libraries/BotChallenge/ClientIp.php';
 require_once dirname(__DIR__) . '/libraries/BotChallenge/Controller/Plugin/Challenge.php';
 
 // Bootstrap the full Omeka application when a test database is configured.

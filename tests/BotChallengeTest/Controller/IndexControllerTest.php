@@ -51,8 +51,9 @@ class BotChallengeTest_Controller_IndexControllerTest extends Omeka_Test_AppTest
         // Set default options the plugin would normally install.
         set_option('botchallenge_salt', bin2hex(random_bytes(32)));
         set_option('botchallenge_delay', 5);
-        set_option('botchallenge_cookie_lifetime', 90);
+        set_option('botchallenge_cookie_lifetime', 7);
         set_option('botchallenge_test_headless', 1);
+        set_option('botchallenge_bind_ip', 0);
         set_option('botchallenge_exception_paths', '/api');
         set_option('botchallenge_exception_ips', '');
     }
@@ -78,16 +79,18 @@ class BotChallengeTest_Controller_IndexControllerTest extends Omeka_Test_AppTest
     {
         $this->dispatch('/bot-challenge');
         $body = $this->response->outputBody();
-        $this->assertStringContainsString('omeka_bot_challenge', $body);
         $this->assertStringContainsString('setInterval', $body);
-        $this->assertStringContainsString('document.cookie', $body);
+        // The client posts the nonce back and the server sets the cookie, so
+        // the page never writes the cookie by itself.
+        $this->assertStringContainsString('fetch(', $body);
+        $this->assertStringNotContainsString('document.cookie', $body);
     }
 
     public function testDefaultRedirectUrl(): void
     {
         $this->dispatch('/bot-challenge');
         $body = $this->response->outputBody();
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/var redirectUrl = "\\\\?\/"/',
             $body,
             'Default redirect URL should be "/"'
@@ -98,7 +101,7 @@ class BotChallengeTest_Controller_IndexControllerTest extends Omeka_Test_AppTest
     {
         $this->dispatch('/bot-challenge?redirect_url=/items/1');
         $body = $this->response->outputBody();
-        $this->assertRegExp(
+        $this->assertMatchesRegularExpression(
             '/var redirectUrl = ".*items.*1"/',
             $body
         );
@@ -108,7 +111,7 @@ class BotChallengeTest_Controller_IndexControllerTest extends Omeka_Test_AppTest
     {
         $this->dispatch('/bot-challenge?redirect_url=//evil.com');
         $body = $this->response->outputBody();
-        $this->assertNotRegExp(
+        $this->assertDoesNotMatchRegularExpression(
             '/var redirectUrl = ".*evil\.com.*"/',
             $body,
             'Open redirect with // should be blocked'
@@ -119,18 +122,63 @@ class BotChallengeTest_Controller_IndexControllerTest extends Omeka_Test_AppTest
     {
         $this->dispatch('/bot-challenge?redirect_url=http://evil.com');
         $body = $this->response->outputBody();
-        $this->assertNotRegExp(
+        $this->assertDoesNotMatchRegularExpression(
             '/var redirectUrl = ".*evil\.com.*"/',
             $body,
             'Open redirect with http:// should be blocked'
         );
     }
 
-    public function testTokenPresentInBody(): void
+    public function testNoncePresentInBody(): void
     {
         $this->dispatch('/bot-challenge');
         $body = $this->response->outputBody();
-        // Token is "microtime_hmac": e.g. "0.12345678 1234567890_abc...def".
-        $this->assertRegExp('/var token = "[\d.]+ \d+_[0-9a-f]{64}"/', $body);
+        $this->assertMatchesRegularExpression('/var nonce = "[0-9a-f]{32}"/', $body);
+    }
+
+    /**
+     * The page used to print a valid token, so the cookie could be harvested
+     * with a single request and shared with any other client.
+     */
+    public function testGetDeliversNoUsableToken(): void
+    {
+        $this->dispatch('/bot-challenge');
+        $body = $this->response->outputBody();
+
+        // No signed token: a token is "{timestamp}_{64 hex}".
+        $this->assertDoesNotMatchRegularExpression('/\d{10}_[0-9a-f]{64}/', $body);
+        $this->assertStringNotContainsString('omeka_bot_challenge', $body);
+    }
+
+    public function testPostWithoutNonceIsRefused(): void
+    {
+        $this->request->setMethod('POST')->setPost(array('nonce' => 'not-a-valid-nonce'));
+        $this->dispatch('/bot-challenge');
+        $this->assertEquals(403, $this->response->getHttpResponseCode());
+    }
+
+    /**
+     * The countdown is run by the client, so the delay is checked by the
+     * server too: else a client posting the nonce immediately gets the cookie.
+     *
+     * @dataProvider provideDelays
+     */
+    public function testDelayIsCheckedByTheServer(int $elapsed, int $delay, bool $tooEarly): void
+    {
+        $this->assertSame($tooEarly, BotChallenge_IndexController::isTooEarly($elapsed, $delay));
+    }
+
+    public function provideDelays(): array
+    {
+        return array(
+            'immediate answer of a bot' => array(0, 5, true),
+            'answer far too early' => array(1, 5, true),
+            'answer just too early' => array(3, 5, true),
+            'one second short, tolerated' => array(4, 5, false),
+            'answer on time' => array(5, 5, false),
+            'answer after the delay' => array(30, 5, false),
+            'no delay configured' => array(0, 0, false),
+            'delay of one second' => array(0, 1, false),
+        );
     }
 }
