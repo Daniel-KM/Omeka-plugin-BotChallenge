@@ -162,3 +162,23 @@ msgstr ""
 #: libraries/BotChallenge/BotIps.php:68
 msgid "Yandex"
 msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:51
+msgid "Bind the cookie to the ip"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:57
+msgid "Add the ip to the signature, so a cookie shared with another machine is refused. Only for a controlled network: an ip changes without the visitor moving (ipv6 rotation, dual stack, private relay, vpn) and is shared by many visitors behind a nat. Toggling it invalidates all cookies."
+msgstr ""
+
+#: views/public/index/index.php:205
+msgid "Verification failed. Reload the page to try again."
+msgstr ""
+
+#: BotChallengePlugin.php:73
+msgid "The lifetime of the challenge cookie was changed from %1$s to %2$s days, because the cookie is now renewed automatically as long as the visitor is active. The previous value (%1$s days) can be set again in the config of the plugin."
+msgstr ""
+
+#: BotChallengePlugin.php:79
+msgid "The existing challenge cookies are invalid: each visitor will pass the challenge once again. This is wanted, since a cookie obtained before this version was usable by any client."
+msgstr ""

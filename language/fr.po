@@ -169,3 +169,23 @@ msgstr "Yandex"
 
 #~ msgid "Ips v4 or v6 or cidr ranges to exclude from the challenge, one per line."
 #~ msgstr "Plages ips v4 ou v6 ou cidr à exclure du défi, une par ligne."
+
+#: views/admin/plugins/bot-challenge-config-form.php:51
+msgid "Bind the cookie to the ip"
+msgstr "Lier le cookie à l’ip"
+
+#: views/admin/plugins/bot-challenge-config-form.php:57
+msgid "Add the ip to the signature, so a cookie shared with another machine is refused. Only for a controlled network: an ip changes without the visitor moving (ipv6 rotation, dual stack, private relay, vpn) and is shared by many visitors behind a nat. Toggling it invalidates all cookies."
+msgstr "Ajouter l’ip à la signature, afin qu’un cookie partagé avec une autre machine soit refusé. Uniquement pour un réseau maîtrisé : une ip change sans que le visiteur se déplace (rotation ipv6, double pile, relais privé, vpn) et elle est partagée par de nombreux visiteurs derrière un nat. Activer ou désactiver cette option invalide tous les cookies."
+
+#: views/public/index/index.php:205
+msgid "Verification failed. Reload the page to try again."
+msgstr "Échec de la vérification. Rechargez la page pour réessayer."
+
+#: BotChallengePlugin.php:73
+msgid "The lifetime of the challenge cookie was changed from %1$s to %2$s days, because the cookie is now renewed automatically as long as the visitor is active. The previous value (%1$s days) can be set again in the config of the plugin."
+msgstr "La durée de vie du cookie de défi est passée de %1$s à %2$s jours, car le cookie est désormais renouvelé automatiquement tant que le visiteur est actif. La valeur précédente (%1$s jours) peut être rétablie dans la configuration de l’extension."
+
+#: BotChallengePlugin.php:79
+msgid "The existing challenge cookies are invalid: each visitor will pass the challenge once again. This is wanted, since a cookie obtained before this version was usable by any client."
+msgstr "Les cookies de défi existants sont invalides : chaque visiteur repassera le défi une fois. C’est voulu, car un cookie obtenu avant cette version était utilisable par n’importe quel client."
