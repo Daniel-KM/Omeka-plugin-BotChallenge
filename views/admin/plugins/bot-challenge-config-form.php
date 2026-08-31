@@ -43,6 +43,18 @@
 
     <div class="field">
         <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_bind_ip', __('Bind the cookie to the ip')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formCheckbox('botchallenge_bind_ip', get_option('botchallenge_bind_ip'), null, array('1', '0')) ?>
+            <p class="explanation">
+                <?= __('Add the ip to the signature, so a cookie shared with another machine is refused. Only for a controlled network: an ip changes without the visitor moving (ipv6 rotation, dual stack, private relay, vpn) and is shared by many visitors behind a nat. Toggling it invalidates all cookies.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
             <?= $this->formLabel('botchallenge_test_headless', __('Detect headless browsers')) ?>
         </div>
         <div class="inputs five columns omega">

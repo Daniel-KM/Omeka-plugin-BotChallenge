@@ -117,8 +117,11 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
 
         $salt = (string) get_option('botchallenge_salt');
         $cookieLifetime = ((int) get_option('botchallenge_cookie_lifetime') ?: 7) * 86400;
+        $ip = get_option('botchallenge_bind_ip')
+            ? BotChallenge_ClientIp::fromServer()
+            : '';
         $timestamp = (string) time();
-        $token = $timestamp . '_' . self::signature($timestamp, $this->userAgent(), $salt);
+        $token = $timestamp . '_' . self::signature($timestamp, $this->userAgent(), $salt, $ip);
 
         // The cookie is set by the server, so it can be http only: the client
         // never needs to read it.
@@ -145,17 +148,16 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
     }
 
     /**
-     * Sign a token for a user agent.
+     * Sign a token for a client.
      *
      * The user agent is included, so a cookie shared with another client is
-     * refused. The ip is not included: it changes too often (mobile network,
-     * cgnat, rotating ipv6) to be usable with a long lived cookie.
-     *
-     * @see BotChallenge_Controller_Plugin_Challenge::signature()
+     * refused. The ip is included only when the option is set: it changes too
+     * often (mobile network, cgnat, rotating ipv6) to be used by default with
+     * a cookie living several days.
      */
-    public static function signature($timestamp, $userAgent, $salt)
+    public static function signature($timestamp, $userAgent, $salt, $ip = '')
     {
-        return hash_hmac('sha256', $timestamp . "\n" . $userAgent, $salt);
+        return hash_hmac('sha256', $timestamp . "\n" . $userAgent . "\n" . $ip, $salt);
     }
 
     protected function userAgent()

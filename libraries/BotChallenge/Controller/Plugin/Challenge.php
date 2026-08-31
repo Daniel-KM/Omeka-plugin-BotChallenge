@@ -85,7 +85,10 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             $timestamp = substr($cookieValue, 0, $pos);
             $hmac = substr($cookieValue, $pos + 1);
             $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
-            $expectedHmac = BotChallenge_IndexController::signature($timestamp, $userAgent, $salt);
+            $ip = get_option('botchallenge_bind_ip')
+                ? $clientIp
+                : '';
+            $expectedHmac = BotChallenge_IndexController::signature($timestamp, $userAgent, $salt, $ip);
             $age = time() - (int) $timestamp;
             if (hash_equals($expectedHmac, $hmac)
                 && $age >= 0
@@ -96,7 +99,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
                 // whatever its activity. Renew it once it is half spent, so
                 // only an inactive visitor is challenged again.
                 if ($age > $cookieLifetime / 2) {
-                    $this->renewCookie($basePath, $salt, $userAgent, $cookieLifetime);
+                    $this->renewCookie($basePath, $salt, $userAgent, $cookieLifetime, $ip);
                 }
                 return;
             }
@@ -113,11 +116,11 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
     /**
      * Renew the cookie of a visitor that is still active.
      */
-    protected function renewCookie($basePath, $salt, $userAgent, $cookieLifetime)
+    protected function renewCookie($basePath, $salt, $userAgent, $cookieLifetime, $ip = '')
     {
         $timestamp = (string) time();
         $token = $timestamp . '_'
-            . BotChallenge_IndexController::signature($timestamp, $userAgent, $salt);
+            . BotChallenge_IndexController::signature($timestamp, $userAgent, $salt, $ip);
 
         $isHttps = false;
         if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
@@ -142,19 +145,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
      */
     protected function getClientIp(): string
     {
-        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
-            if ($ip !== '') {
-                return $ip;
-            }
-        }
-        if (!empty($_SERVER['HTTP_X_REAL_IP'])) {
-            $ip = trim($_SERVER['HTTP_X_REAL_IP']);
-            if ($ip !== '') {
-                return $ip;
-            }
-        }
-        return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        return BotChallenge_ClientIp::fromServer();
     }
 
     /**
