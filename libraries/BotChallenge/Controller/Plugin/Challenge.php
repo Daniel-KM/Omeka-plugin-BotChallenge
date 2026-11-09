@@ -98,6 +98,15 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
 
         // Redirect to challenge page.
         $url = $basePath . '/bot-challenge?redirect_url=' . urlencode($requestUri);
+
+        // The clients of the feeds and of the exports (param "output") cannot
+        // pass a browser challenge, but a page without this format ignores the
+        // param, so the check is done once the controller set its context.
+        if ($this->isMachineOutput((string) $request->getParam('output'))) {
+            Zend_Controller_Action_HelperBroker::addHelper(new BotChallenge_Controller_Action_Helper_OutputContext($url));
+            return;
+        }
+
         $this->getResponse()
             ->setRedirect($url, 302)
             ->sendResponse();
@@ -160,6 +169,19 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
      *
      * @param string[] $exceptionPaths
      */
+    /**
+     * Check if the output is a response context (rss2, atom, omeka-xml…).
+     *
+     * The contexts are the default ones and the ones added by the plugins with
+     * the filter "response_contexts".
+     */
+    protected function isMachineOutput(string $output): bool
+    {
+        return $output !== ''
+            && Zend_Controller_Action_HelperBroker::hasHelper('contextSwitch')
+            && Zend_Controller_Action_HelperBroker::getStaticHelper('contextSwitch')->hasContext($output);
+    }
+
     protected function pathIsExcepted(string $path, array $exceptionPaths): bool
     {
         foreach ($exceptionPaths as $exceptionPath) {
