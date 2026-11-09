@@ -79,6 +79,27 @@
 
     <div class="field">
         <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_interaction', __('Action of the visitor')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formRadio(
+                'botchallenge_interaction',
+                get_option('botchallenge_interaction') ?: 'none',
+                null,
+                array(
+                    'none' => __('None (automatic redirection)'),
+                    'checkbox' => __('Checkbox to check'),
+                    'button' => __('Button to click'),
+                )
+            ) ?>
+            <p class="explanation">
+                <?= __('Require a real action of the visitor once the delay is over. The bots that run the javascript but do not interact with the page are stopped.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
             <?= $this->formLabel('botchallenge_trusted_proxies', __('Trusted reverse proxies')) ?>
         </div>
         <div class="inputs five columns omega">

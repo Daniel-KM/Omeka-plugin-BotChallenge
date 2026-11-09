@@ -44,6 +44,7 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
 
         $delay = (int) get_option('botchallenge_delay') ?: 5;
         $testHeadless = (bool) get_option('botchallenge_test_headless');
+        $interaction = (string) get_option('botchallenge_interaction');
 
         // Prevent caching.
         $this->getResponse()
@@ -63,6 +64,7 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
         $this->view->redirectUrl = $redirectUrl;
         $this->view->isHttps = $this->isHttps();
         $this->view->testHeadless = $testHeadless;
+        $this->view->interaction = in_array($interaction, array('checkbox', 'button'), true) ? $interaction : '';
     }
 
     /**

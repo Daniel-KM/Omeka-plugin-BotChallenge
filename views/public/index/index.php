@@ -73,6 +73,28 @@
             margin: 12px 0;
         }
 
+        .interaction {
+            margin: 12px 0;
+        }
+        .interaction label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .interaction input {
+            width: 20px;
+            height: 20px;
+        }
+        .interaction button {
+            border: 0;
+            background: #003576;
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            padding: 8px 24px;
+        }
+
         .status {
             color: #666;
             font-size: 14px;
@@ -131,7 +153,12 @@
             <div class="spinner" id="spinner"></div>
             <h1><?= html_escape(__('Verifying your browser…')) ?></h1>
             <div class="countdown" id="countdown"></div>
-            <p class="status" id="status"><?= html_escape(__('This is an automatic process. Please wait.')) ?></p>
+            <?php if ($interaction === 'checkbox'): ?>
+            <p class="interaction" id="interaction" hidden><label><input type="checkbox" id="interaction-control"> <?= html_escape(__('I am not a robot')) ?></label></p>
+            <?php elseif ($interaction === 'button'): ?>
+            <p class="interaction" id="interaction" hidden><button type="button" id="interaction-control"><?= html_escape(__('Access the site')) ?></button></p>
+            <?php endif ?>
+            <p class="status" id="status"><?= html_escape($interaction ? __('Please wait a few seconds.') : __('This is an automatic process. Please wait.')) ?></p>
         </div>
     </div>
     <footer>
@@ -144,6 +171,7 @@
         var redirectUrl = <?= json_encode($redirectUrl) ?>;
         var isHttps = <?= $isHttps ? 'true' : 'false' ?>;
         var testHeadless = <?= $testHeadless ? 'true' : 'false' ?>;
+        var interaction = <?= json_encode($interaction) ?>;
 
         var box = document.getElementById('challenge');
         var countdownEl = document.getElementById('countdown');
@@ -172,6 +200,47 @@
             }
         }
 
+        var verify = function() {
+            // The cookie is delivered by the server, once it checked the
+            // nonce: the client cannot forge it by itself.
+            var body = new FormData();
+            body.append('nonce', nonce);
+            fetch(window.location.pathname, {
+                method: 'POST',
+                body: body,
+                credentials: 'same-origin',
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('denied');
+                    statusEl.textContent = <?= json_encode(__('Verified. Redirecting…')) ?>;
+                    window.location.href = redirectUrl;
+                })
+                .catch(function () {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = <?= json_encode(__('Verification failed. Reload the page to try again.')) ?>;
+                });
+        };
+
+        var askInteraction = function() {
+            var control = document.getElementById('interaction-control');
+            document.getElementById('interaction').hidden = false;
+            statusEl.textContent = interaction === 'checkbox'
+                ? <?= json_encode(__('Check the box to access the site.')) ?>
+                : <?= json_encode(__('Click the button to access the site.')) ?>;
+            control.focus();
+            control.addEventListener('click', function handler(event) {
+                // A click triggered by a script is not trusted.
+                if (!event.isTrusted) {
+                    event.preventDefault();
+                    return;
+                }
+                control.removeEventListener('click', handler);
+                control.disabled = true;
+                verify();
+            });
+        };
+
         var remaining = delay;
         countdownEl.textContent = remaining;
         var interval = setInterval(function() {
@@ -182,25 +251,11 @@
                 clearInterval(interval);
                 countdownEl.textContent = '';
                 spinnerEl.style.display = 'none';
-                // The cookie is delivered by the server, once it checked the
-                // nonce: the client cannot forge it by itself.
-                var body = new FormData();
-                body.append('nonce', nonce);
-                fetch(window.location.pathname, {
-                    method: 'POST',
-                    body: body,
-                    credentials: 'same-origin',
-                    headers: {'X-Requested-With': 'XMLHttpRequest'}
-                })
-                    .then(function (response) {
-                        if (!response.ok) throw new Error('denied');
-                        statusEl.textContent = <?= json_encode(__('Verified. Redirecting…')) ?>;
-                        window.location.href = redirectUrl;
-                    })
-                    .catch(function () {
-                        statusEl.className = 'status error';
-                        statusEl.textContent = <?= json_encode(__('Verification failed. Reload the page to try again.')) ?>;
-                    });
+                if (interaction) {
+                    askInteraction();
+                } else {
+                    verify();
+                }
             }
         }, 1000);
     })();
