@@ -121,7 +121,7 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
             ? BotChallenge_ClientIp::fromServer()
             : '';
         $timestamp = (string) time();
-        $token = $timestamp . '_' . self::signature($timestamp, $this->userAgent(), $salt, $ip);
+        $token = $timestamp . '_' . BotChallenge_Token::signature($timestamp, $this->userAgent(), $salt, $ip);
 
         // The cookie is set by the server, so it can be http only: the client
         // never needs to read it.
@@ -145,19 +145,6 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
     public static function isTooEarly($elapsed, $delay)
     {
         return $elapsed < $delay - self::DELAY_TOLERANCE;
-    }
-
-    /**
-     * Sign a token for a client.
-     *
-     * The user agent is included, so a cookie shared with another client is
-     * refused. The ip is included only when the option is set: it changes too
-     * often (mobile network, cgnat, rotating ipv6) to be used by default with
-     * a cookie living several days.
-     */
-    public static function signature($timestamp, $userAgent, $salt, $ip = '')
-    {
-        return hash_hmac('sha256', $timestamp . "\n" . $userAgent . "\n" . $ip, $salt);
     }
 
     protected function userAgent()

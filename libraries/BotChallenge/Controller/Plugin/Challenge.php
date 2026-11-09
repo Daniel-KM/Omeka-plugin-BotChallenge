@@ -88,7 +88,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             $ip = get_option('botchallenge_bind_ip')
                 ? $clientIp
                 : '';
-            $expectedHmac = BotChallenge_IndexController::signature($timestamp, $userAgent, $salt, $ip);
+            $expectedHmac = BotChallenge_Token::signature($timestamp, $userAgent, $salt, $ip);
             $age = time() - (int) $timestamp;
             if (hash_equals($expectedHmac, $hmac)
                 && $age >= 0
@@ -120,7 +120,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
     {
         $timestamp = (string) time();
         $token = $timestamp . '_'
-            . BotChallenge_IndexController::signature($timestamp, $userAgent, $salt, $ip);
+            . BotChallenge_Token::signature($timestamp, $userAgent, $salt, $ip);
 
         $isHttps = false;
         if (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') {
