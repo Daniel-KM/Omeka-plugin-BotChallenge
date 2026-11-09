@@ -91,6 +91,13 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
             }
         }
 
+        // The ranges of the exempted bots are merged on each upgrade too: a fresh
+        // version may bring new bundled ranges.
+        $this->_saveBots(
+            json_decode((string) get_option('botchallenge_exception_bots'), true) ?: array(),
+            (string) get_option('botchallenge_exception_ips')
+        );
+
         // An empty salt would sign every cookie the same way.
         if (!get_option('botchallenge_salt')) {
             set_option('botchallenge_salt', bin2hex(random_bytes(32)));
