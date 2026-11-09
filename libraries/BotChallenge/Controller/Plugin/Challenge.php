@@ -47,17 +47,8 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
         // Skip exception paths.
         $exceptionPaths = get_option('botchallenge_exception_paths') ?: '';
         $exceptionPaths = array_filter(array_map('trim', explode("\n", $exceptionPaths)));
-        foreach ($exceptionPaths as $exceptionPath) {
-            // Compare on a segment boundary with final "/".
-            $exceptionPath = rtrim((string) $exceptionPath, '/');
-            if ($exceptionPath === '') {
-                continue;
-            }
-            if ($pathOnly === $exceptionPath
-                || strpos($pathOnly, $exceptionPath . '/') === 0
-            ) {
-                return;
-            }
+        if ($this->pathIsExcepted($pathOnly, $exceptionPaths)) {
+            return;
         }
 
         // Skip exception IPs.
@@ -182,5 +173,47 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
         $mask = str_pad($mask, strlen($ipBin), "\x00");
 
         return ($ipBin & $mask) === ($rangeBin & $mask);
+    }
+
+    /**
+     * Whether the path matches an exception path, on a segment boundary.
+     *
+     * A prefix pattern ("/sso") matches itself and any sub-path ("/sso",
+     * "/sso/metadata"), but not a path that merely shares its prefix
+     * ("/ssoxxx"), so an exempted prefix cannot be widened by accident.
+     *
+     * A suffix pattern (a star then "/suggest") matches any path whose last
+     * segment is the given one ("/search/suggest"), for the machine endpoints
+     * that have no fixed prefix.
+     *
+     * @param string[] $exceptionPaths
+     */
+    protected function pathIsExcepted(string $path, array $exceptionPaths): bool
+    {
+        foreach ($exceptionPaths as $exceptionPath) {
+            $exceptionPath = (string) $exceptionPath;
+            if ($exceptionPath !== '' && $exceptionPath[0] === '*') {
+                $segment = rtrim(substr($exceptionPath, 1), '/');
+                if ($segment === '') {
+                    continue;
+                }
+                if (substr($path, -strlen($segment)) === $segment
+                    || strpos($path, $segment . '/') !== false
+                ) {
+                    return true;
+                }
+                continue;
+            }
+            $exceptionPath = rtrim($exceptionPath, '/');
+            if ($exceptionPath === '') {
+                continue;
+            }
+            if ($path === $exceptionPath
+                || strpos($path, $exceptionPath . '/') === 0
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
