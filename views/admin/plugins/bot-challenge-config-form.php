@@ -79,6 +79,18 @@
 
     <div class="field">
         <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_trusted_proxies', __('Trusted reverse proxies')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formTextarea('botchallenge_trusted_proxies', get_option('botchallenge_trusted_proxies'), array('id' => 'botchallenge_trusted_proxies', 'rows' => 4, 'cols' => 60)) ?>
+            <p class="explanation">
+                <?= __('Addresses or cidr ranges of the reverse proxies in front of the server, one per line. The address of the visitor is read in the headers X-Forwarded-For and X-Real-IP only when the request comes from one of them, else anybody could write an excepted address in them. When empty, the proxies with a private or loopback address are trusted. A proxy connecting with the address of the server itself is trusted too.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
             <?= $this->formLabel('botchallenge_exception_bots', __('Exempted search engines')) ?>
         </div>
         <div class="inputs five columns omega">

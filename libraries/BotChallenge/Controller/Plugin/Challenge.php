@@ -132,7 +132,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
     }
 
     /**
-     * Get client IP, handling proxies.
+     * Get client IP, handling the trusted proxies.
      */
     protected function getClientIp(): string
     {
@@ -144,35 +144,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
      */
     protected function ipInCidr(string $ip, string $cidr): bool
     {
-        if (strpos($cidr, '/') === false) {
-            return $ip === $cidr;
-        }
-
-        [$range, $bits] = explode('/', $cidr, 2);
-        $bits = (int) $bits;
-
-        $ipBin = inet_pton($ip);
-        $rangeBin = inet_pton($range);
-
-        if ($ipBin === false || $rangeBin === false) {
-            return false;
-        }
-        if (strlen($ipBin) !== strlen($rangeBin)) {
-            return false;
-        }
-
-        $totalBits = strlen($ipBin) * 8;
-        if ($bits < 0 || $bits > $totalBits) {
-            return false;
-        }
-
-        $mask = str_repeat("\xff", (int) ($bits / 8));
-        if ($bits % 8) {
-            $mask .= chr(0xff << (8 - ($bits % 8)));
-        }
-        $mask = str_pad($mask, strlen($ipBin), "\x00");
-
-        return ($ipBin & $mask) === ($rangeBin & $mask);
+        return BotChallenge_ClientIp::ipInCidr($ip, $cidr);
     }
 
     /**

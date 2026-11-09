@@ -18,6 +18,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         'botchallenge_cookie_lifetime' => 7,
         'botchallenge_test_headless' => 1,
         'botchallenge_bind_ip' => 0,
+        'botchallenge_trusted_proxies' => '',
         // Machine endpoints and token authorized links, where a browser
         // challenge is meaningless or harmful.
         'botchallenge_exception_paths' => self::DEFAULT_EXCEPTION_PATHS,
@@ -155,6 +156,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         set_option('botchallenge_cookie_lifetime', (int) $post['botchallenge_cookie_lifetime']);
         set_option('botchallenge_test_headless', isset($post['botchallenge_test_headless']) ? 1 : 0);
         set_option('botchallenge_bind_ip', empty($post['botchallenge_bind_ip']) ? 0 : 1);
+        set_option('botchallenge_trusted_proxies', implode("\n", BotChallenge_ClientIp::normalizeProxies($post['botchallenge_trusted_proxies'] ?? '')));
         set_option('botchallenge_exception_paths', trim($post['botchallenge_exception_paths'] ?? ''));
 
         $exceptionIps = trim($post['botchallenge_exception_ips'] ?? '');
