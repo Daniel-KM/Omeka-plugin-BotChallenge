@@ -80,7 +80,18 @@ BotChallenge > Configure).
   controlled network: see the limits below. Toggling it invalidates all
   cookies.
 - Detect headless browsers: Run additional tests for headless environments
-- Exception paths: /api, /files, /iiif, /oai-pmh-repository, etc.
+- Action of the visitor: None (automatic redirection), a checkbox to check or a
+  button to click once the delay is over, to stop the bots that run the
+  javascript without interacting with the page. A click triggered by a script
+  is ignored. It is a simple obstacle, not a proof: the server cannot check that
+  the click was real.
+- Trusted reverse proxies: the proxies in front of the server, see below.
+- Exception paths: /api, /files, /iiif, /oai-pmh-repository, /robots.txt, etc.
+  A path starting with a star matches on the last segment, for example
+  `*/suggest`. The feeds and the exports requested with the param `output`
+  (rss2, atom, omeka-xml, dcmes-xml, and the formats added by the plugins) are
+  not challenged, since their clients cannot pass it, but only when the page
+  provides the format: elsewhere, the param is ignored and the page is html.
 - Exempted search engines: check the engines whose published ip ranges are
   excluded from the challenge
 - Update the ip ranges now: run a job to refresh the bundled ranges
@@ -88,13 +99,24 @@ BotChallenge > Configure).
   ranges of the engines above: the networks of the institution, a partner
   harvester, etc.
 
+The ip of the visitor is read in the headers X-Forwarded-For (the first ip from
+the right that is not a trusted proxy) and X-Real-IP only when the request comes
+from a trusted reverse proxy, else anybody could write an excepted ip in them.
+When the list is empty, the proxies with a private or loopback address are
+trusted, so the plugin works without config with or without a proxy in the same
+host or network. A proxy connecting with the address of the server itself (for
+example Caddy in front of Apache) is trusted too. Set the list when the proxy
+has a public address on another machine (load balancer, cdn) or when the local
+network is not trusted.
+
 ### How the challenge works
 
 1. A visitor without a valid cookie is redirected to the challenge page, that
    holds a single use nonce, tied to the session. The page delivers no cookie:
    a plain request returns nothing usable.
 2. The javascript checks the browser (headless detection), waits for the delay,
-   then posts the nonce back.
+   asks for the action of the visitor if the option is set, then posts the nonce
+   back.
 3. The server checks the nonce, consumes it, and sets the cookie itself. So the
    cookie is `HttpOnly`: the client never needs to read it.
 
