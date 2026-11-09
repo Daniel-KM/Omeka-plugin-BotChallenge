@@ -12,7 +12,7 @@ require_once dirname(dirname(__DIR__)) . '/controllers/IndexController.php';
  * The signature of the plugin is called directly: a test rewriting the formula
  * would keep passing after the formula changed.
  *
- * @covers BotChallenge_IndexController::signature
+ * @covers BotChallenge_Token::signature
  */
 class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
 {
@@ -22,24 +22,24 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
     public function testSameInputsProduceSameSignature(): void
     {
         $this->assertSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT),
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT)
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT),
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT)
         );
     }
 
     public function testDifferentSaltProducesDifferentSignature(): void
     {
         $this->assertNotSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, 'salt-one'),
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, 'salt-two')
+            BotChallenge_Token::signature('1700000000', self::AGENT, 'salt-one'),
+            BotChallenge_Token::signature('1700000000', self::AGENT, 'salt-two')
         );
     }
 
     public function testDifferentTimestampProducesDifferentSignature(): void
     {
         $this->assertNotSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT),
-            BotChallenge_IndexController::signature('1700000001', self::AGENT, self::SALT)
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT),
+            BotChallenge_Token::signature('1700000001', self::AGENT, self::SALT)
         );
     }
 
@@ -49,20 +49,20 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
     public function testDifferentUserAgentProducesDifferentSignature(): void
     {
         $this->assertNotSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT),
-            BotChallenge_IndexController::signature('1700000000', 'Some-Bot/1.0', self::SALT)
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT),
+            BotChallenge_Token::signature('1700000000', 'Some-Bot/1.0', self::SALT)
         );
     }
 
     public function testEmptyUserAgentIsSupported(): void
     {
-        $signature = BotChallenge_IndexController::signature('1700000000', '', self::SALT);
+        $signature = BotChallenge_Token::signature('1700000000', '', self::SALT);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $signature);
     }
 
     public function testSignatureFormat(): void
     {
-        $signature = BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT);
+        $signature = BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT);
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $signature);
     }
 
@@ -73,7 +73,7 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
     public function testTokenHasNoSpace(): void
     {
         $timestamp = (string) time();
-        $token = $timestamp . '_' . BotChallenge_IndexController::signature($timestamp, self::AGENT, self::SALT);
+        $token = $timestamp . '_' . BotChallenge_Token::signature($timestamp, self::AGENT, self::SALT);
         $this->assertStringNotContainsString(' ', $token);
         $this->assertMatchesRegularExpression('/^\d+_[0-9a-f]{64}$/', $token);
     }
@@ -84,7 +84,7 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
     public function testValidation(): void
     {
         $timestamp = (string) time();
-        $token = $timestamp . '_' . BotChallenge_IndexController::signature($timestamp, self::AGENT, self::SALT);
+        $token = $timestamp . '_' . BotChallenge_Token::signature($timestamp, self::AGENT, self::SALT);
 
         $pos = strrpos($token, '_');
         $this->assertNotFalse($pos);
@@ -92,7 +92,7 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
         $parsedSignature = substr($token, $pos + 1);
 
         $this->assertTrue(hash_equals(
-            BotChallenge_IndexController::signature($parsedTimestamp, self::AGENT, self::SALT),
+            BotChallenge_Token::signature($parsedTimestamp, self::AGENT, self::SALT),
             $parsedSignature
         ));
         $this->assertSame(time(), (int) $parsedTimestamp);
@@ -101,10 +101,10 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
     public function testRejectsWrongSalt(): void
     {
         $timestamp = (string) time();
-        $signature = BotChallenge_IndexController::signature($timestamp, self::AGENT, 'correct-salt');
+        $signature = BotChallenge_Token::signature($timestamp, self::AGENT, 'correct-salt');
 
         $this->assertFalse(hash_equals(
-            BotChallenge_IndexController::signature($timestamp, self::AGENT, 'wrong-salt'),
+            BotChallenge_Token::signature($timestamp, self::AGENT, 'wrong-salt'),
             $signature
         ));
     }
@@ -115,36 +115,47 @@ class BotChallengeTest_TokenTest extends PHPUnit\Framework\TestCase
     public function testIpIsNotInTheSignatureByDefault(): void
     {
         $this->assertSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT),
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT, '')
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT),
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT, '')
         );
     }
 
     public function testDifferentIpProducesDifferentSignature(): void
     {
         $this->assertNotSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT, '10.0.0.1'),
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT, '10.0.0.2')
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT, '10.0.0.1'),
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT, '10.0.0.2')
         );
     }
 
     public function testEnablingTheIpInvalidatesTheCookies(): void
     {
         $this->assertNotSame(
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT),
-            BotChallenge_IndexController::signature('1700000000', self::AGENT, self::SALT, '10.0.0.1')
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT),
+            BotChallenge_Token::signature('1700000000', self::AGENT, self::SALT, '10.0.0.1')
         );
     }
 
     public function testRejectsSharedCookie(): void
     {
         $timestamp = (string) time();
-        $signature = BotChallenge_IndexController::signature($timestamp, self::AGENT, self::SALT);
+        $signature = BotChallenge_Token::signature($timestamp, self::AGENT, self::SALT);
 
         // Another client replaying the very same cookie.
         $this->assertFalse(hash_equals(
-            BotChallenge_IndexController::signature($timestamp, 'Another-Client/2.0', self::SALT),
+            BotChallenge_Token::signature($timestamp, 'Another-Client/2.0', self::SALT),
             $signature
         ));
     }
+
+    /**
+     * Zend does not autoload the controllers, so the front controller plugin,
+     * run on each page, cannot use a class of the controller.
+     */
+    public function testFrontControllerPluginDoesNotUseAController(): void
+    {
+        $source = file_get_contents(dirname(__DIR__, 2) . '/libraries/BotChallenge/Controller/Plugin/Challenge.php');
+        $this->assertStringNotContainsString('BotChallenge_IndexController', $source);
+    }
+
 }

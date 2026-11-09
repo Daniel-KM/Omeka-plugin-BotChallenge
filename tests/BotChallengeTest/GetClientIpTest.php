@@ -95,4 +95,71 @@ class BotChallengeTest_GetClientIpTest extends PHPUnit\Framework\TestCase
         unset($_SERVER['HTTP_X_FORWARDED_FOR'], $_SERVER['HTTP_X_REAL_IP'], $_SERVER['REMOTE_ADDR']);
         $this->assertSame('127.0.0.1', $this->challenge->publicGetClientIp());
     }
+
+    public function testHeadersOfAPublicPeerAreIgnored(): void
+    {
+        $this->setServer([
+            'HTTP_X_FORWARDED_FOR' => '198.51.100.10',
+            'HTTP_X_REAL_IP' => '198.51.100.20',
+            'REMOTE_ADDR' => '203.0.113.50',
+        ]);
+        $this->assertSame('203.0.113.50', $this->challenge->publicGetClientIp());
+    }
+
+    public function testForgedLeftPartIsIgnored(): void
+    {
+        $server = [
+            'HTTP_X_FORWARDED_FOR' => '66.249.66.1, 198.51.100.10',
+            'REMOTE_ADDR' => '10.0.0.1',
+        ];
+        $this->assertSame('198.51.100.10', BotChallenge_ClientIp::fromServer($server, []));
+    }
+
+    public function testExplicitListReplacesPrivateAddresses(): void
+    {
+        $server = ['HTTP_X_FORWARDED_FOR' => '198.51.100.10', 'REMOTE_ADDR' => '10.0.0.1'];
+        $this->assertSame('10.0.0.1', BotChallenge_ClientIp::fromServer($server, ['192.0.2.10']));
+        $server['REMOTE_ADDR'] = '192.0.2.10';
+        $this->assertSame('198.51.100.10', BotChallenge_ClientIp::fromServer($server, ['192.0.2.0/24']));
+    }
+
+    public function testProxyOnTheSameServerIsTrusted(): void
+    {
+        $server = [
+            'SERVER_ADDR' => '135.148.195.196',
+            'REMOTE_ADDR' => '135.148.195.196',
+            'HTTP_X_FORWARDED_FOR' => '198.51.100.10',
+        ];
+        $this->assertSame('198.51.100.10', BotChallenge_ClientIp::fromServer($server, []));
+    }
+
+    public function testNormalizeProxies(): void
+    {
+        $this->assertSame(
+            ['192.0.2.10', '10.0.0.0/8', '2001:db8::/32'],
+            BotChallenge_ClientIp::normalizeProxies("192.0.2.10\nnot-an-ip\n10.0.0.0/8\n10.0.0.0/99\n2001:db8::/32\n192.0.2.10")
+        );
+    }
+
+    /**
+     * @dataProvider pathProvider
+     */
+    public function testPathIsExcepted(string $path, array $patterns, bool $expected): void
+    {
+        $this->assertSame($expected, $this->challenge->publicPathIsExcepted($path, $patterns));
+    }
+
+    public function pathProvider(): array
+    {
+        return [
+            'prefix itself' => ['/api', ['/api'], true],
+            'prefix sub-path' => ['/api/items', ['/api'], true],
+            'shared prefix is not matched' => ['/apixxx', ['/api'], false],
+            'suffix' => ['/search/suggest', ['*/suggest'], true],
+            'suffix with sub-path' => ['/search/suggest/x', ['*/suggest'], true],
+            'other segment' => ['/search/results', ['*/suggest'], false],
+            'empty star' => ['/search', ['*'], false],
+        ];
+    }
+
 }

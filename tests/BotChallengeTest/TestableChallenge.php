@@ -17,4 +17,14 @@ class BotChallengeTest_TestableChallenge extends BotChallenge_Controller_Plugin_
     {
         return $this->getClientIp();
     }
+
+    public function publicPathIsExcepted(string $path, array $exceptionPaths): bool
+    {
+        return $this->pathIsExcepted($path, $exceptionPaths);
+    }
+
+    public function publicIsMachineOutput(string $output): bool
+    {
+        return $this->isMachineOutput($output);
+    }
 }

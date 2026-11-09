@@ -25,7 +25,9 @@ require_once $omekaRoot . '/application/libraries/Omeka/Controller/AbstractActio
 
 // Autoload the plugin library classes (needed for unit tests).
 require_once dirname(__DIR__) . '/libraries/BotChallenge/ClientIp.php';
+require_once dirname(__DIR__) . '/libraries/BotChallenge/Token.php';
 require_once dirname(__DIR__) . '/libraries/BotChallenge/Controller/Plugin/Challenge.php';
+require_once dirname(__DIR__) . '/libraries/BotChallenge/Controller/Action/Helper/OutputContext.php';
 
 // Bootstrap the full Omeka application when a test database is configured.
 $omekaTestBootstrap = $omekaRoot . '/application/tests/bootstrap.php';
