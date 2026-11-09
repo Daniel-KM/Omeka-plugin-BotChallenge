@@ -34,7 +34,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * Paths opened by default, one per line.
      */
-    const DEFAULT_EXCEPTION_PATHS = "/api\n/files\n/iiif\n/iiif-presentation\n/oai-pmh-repository\n/sitemap.xml";
+    const DEFAULT_EXCEPTION_PATHS = "/api\n/files\n/iiif\n/iiif-presentation\n/oai-pmh-repository\n/robots.txt\n/sitemap.xml";
 
     public function hookInstall()
     {
@@ -81,6 +81,13 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
             }
 
             $this->_flash(__('The existing challenge cookies are invalid: each visitor will pass the challenge once again. This is wanted, since a cookie obtained before this version was usable by any client.'));
+        }
+
+        if (version_compare($oldVersion, '2.3.8', '<')) {
+            $paths = array_filter(array_map('trim', explode("\n", (string) get_option('botchallenge_exception_paths'))));
+            $paths = array_unique(array_merge($paths, array('/robots.txt')));
+            sort($paths);
+            set_option('botchallenge_exception_paths', implode("\n", $paths));
         }
 
         // The options added by a new version are not written by install(), that
