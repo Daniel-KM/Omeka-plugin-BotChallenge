@@ -189,3 +189,55 @@ msgstr "La durée de vie du cookie de défi est passée de %1$s à %2$s jours, c
 #: BotChallengePlugin.php:79
 msgid "The existing challenge cookies are invalid: each visitor will pass the challenge once again. This is wanted, since a cookie obtained before this version was usable by any client."
 msgstr "Les cookies de défi existants sont invalides : chaque visiteur repassera le défi une fois. C’est voulu, car un cookie obtenu avant cette version était utilisable par n’importe quel client."
+
+#: views/public/index/index.php:157
+msgid "I am not a robot"
+msgstr "Je ne suis pas un robot"
+
+#: views/public/index/index.php:159
+msgid "Access the site"
+msgstr "Accéder au site"
+
+#: views/public/index/index.php:161
+msgid "Please wait a few seconds."
+msgstr "Veuillez patienter quelques secondes."
+
+#: views/public/index/index.php:229
+msgid "Check the box to access the site."
+msgstr "Cochez la case pour accéder au site."
+
+#: views/public/index/index.php:230
+msgid "Click the button to access the site."
+msgstr "Cliquez sur le bouton pour accéder au site."
+
+#: views/admin/plugins/bot-challenge-config-form.php:6
+msgid "Bot Challenge"
+msgstr "Défi anti-robots"
+
+#: views/admin/plugins/bot-challenge-config-form.php:82
+msgid "Action of the visitor"
+msgstr "Action du visiteur"
+
+#: views/admin/plugins/bot-challenge-config-form.php:90
+msgid "None (automatic redirection)"
+msgstr "Aucune (redirection automatique)"
+
+#: views/admin/plugins/bot-challenge-config-form.php:91
+msgid "Checkbox to check"
+msgstr "Case à cocher"
+
+#: views/admin/plugins/bot-challenge-config-form.php:92
+msgid "Button to click"
+msgstr "Bouton à cliquer"
+
+#: views/admin/plugins/bot-challenge-config-form.php:96
+msgid "Require a real action of the visitor once the delay is over. The bots that run the javascript but do not interact with the page are stopped."
+msgstr "Exiger une action réelle du visiteur une fois le délai écoulé. Les robots qui exécutent le javascript mais n’interagissent pas avec la page sont arrêtés."
+
+#: views/admin/plugins/bot-challenge-config-form.php:103
+msgid "Trusted reverse proxies"
+msgstr "Proxys inverses de confiance"
+
+#: views/admin/plugins/bot-challenge-config-form.php:108
+msgid "Addresses or cidr ranges of the reverse proxies in front of the server, one per line. The address of the visitor is read in the headers X-Forwarded-For and X-Real-IP only when the request comes from one of them, else anybody could write an excepted address in them. When empty, the proxies with a private or loopback address are trusted. A proxy connecting with the address of the server itself is trusted too."
+msgstr "Adresses ou plages cidr des proxys inverses placés devant le serveur, une par ligne. L’adresse du visiteur est lue dans les en-têtes X-Forwarded-For et X-Real-IP uniquement quand la requête provient de l’un d’eux, sinon n’importe qui pourrait y écrire une adresse exemptée. Si la liste est vide, les proxys ayant une adresse privée ou de bouclage sont considérés comme fiables. Un proxy qui se connecte avec l’adresse du serveur lui-même l’est également."

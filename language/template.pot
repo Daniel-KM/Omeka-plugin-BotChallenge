@@ -182,3 +182,55 @@ msgstr ""
 #: BotChallengePlugin.php:79
 msgid "The existing challenge cookies are invalid: each visitor will pass the challenge once again. This is wanted, since a cookie obtained before this version was usable by any client."
 msgstr ""
+
+#: views/public/index/index.php:157
+msgid "I am not a robot"
+msgstr ""
+
+#: views/public/index/index.php:159
+msgid "Access the site"
+msgstr ""
+
+#: views/public/index/index.php:161
+msgid "Please wait a few seconds."
+msgstr ""
+
+#: views/public/index/index.php:229
+msgid "Check the box to access the site."
+msgstr ""
+
+#: views/public/index/index.php:230
+msgid "Click the button to access the site."
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:6
+msgid "Bot Challenge"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:82
+msgid "Action of the visitor"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:90
+msgid "None (automatic redirection)"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:91
+msgid "Checkbox to check"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:92
+msgid "Button to click"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:96
+msgid "Require a real action of the visitor once the delay is over. The bots that run the javascript but do not interact with the page are stopped."
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:103
+msgid "Trusted reverse proxies"
+msgstr ""
+
+#: views/admin/plugins/bot-challenge-config-form.php:108
+msgid "Addresses or cidr ranges of the reverse proxies in front of the server, one per line. The address of the visitor is read in the headers X-Forwarded-For and X-Real-IP only when the request comes from one of them, else anybody could write an excepted address in them. When empty, the proxies with a private or loopback address are trusted. A proxy connecting with the address of the server itself is trusted too."
+msgstr ""
