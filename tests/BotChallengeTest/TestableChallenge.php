@@ -27,4 +27,46 @@ class BotChallengeTest_TestableChallenge extends BotChallenge_Controller_Plugin_
     {
         return $this->isMachineOutput($output);
     }
+
+    /**
+     * Options read by the helpers, since get_option() is not available here.
+     *
+     * @var array
+     */
+    public $options = array();
+
+    /**
+     * @var BotChallenge_Cache|null
+     */
+    public $fakeCache;
+
+    /**
+     * @var BotChallenge_ReverseDns|null
+     */
+    public $fakeReverseDns;
+
+    public function publicIsPreviewBot(string $userAgent): bool
+    {
+        return $this->isPreviewBot($userAgent);
+    }
+
+    public function publicIsVerifiedByReverseDns(string $userAgent, string $ip): bool
+    {
+        return $this->isVerifiedByReverseDns($userAgent, $ip);
+    }
+
+    protected function option(string $name)
+    {
+        return $this->options[$name] ?? null;
+    }
+
+    protected function cache(): BotChallenge_Cache
+    {
+        return $this->fakeCache ?? parent::cache();
+    }
+
+    protected function reverseDns(): BotChallenge_ReverseDns
+    {
+        return $this->fakeReverseDns ?? parent::reverseDns();
+    }
 }

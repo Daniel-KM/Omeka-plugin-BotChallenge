@@ -154,6 +154,30 @@ declarative: a client copying the header along with the cookie would pass. The
 barrier is the nonce, that forces each client to hold a session and to make the
 round trip.
 
+### Link previews
+
+The link previews of the social networks and the messaging apps (Facebook, X,
+LinkedIn, Mastodon, Bluesky, Slack, Discord, Telegram, WhatsApp…) are built by
+bots that cannot solve the challenge, and most of them have no published ip
+ranges: each instance of Mastodon fetches its own previews. A bot whose user
+agent contains one of the parts listed in the config form is not redirected to
+the challenge: it gets a card with the metadata of the page (title, description,
+thumbnail of the item, the file, the collection or the simple page, else of the
+site), built without dispatching the page, so it costs about as little as the
+challenge itself. A scraper using such a user agent gets nothing else than this
+card and does not load the server.
+
+A bot may be verified by its network too: the config lists the parts of the user
+agent and the domains of their reverse dns, like "TelegramBot =
+ptr.telegram.org". When the ip resolves to a host of the domain and this host
+resolves back to the ip, the bot gets the whole page. The lookup is done only
+for these user agents, and its result is cached by ip for six hours, so a botnet
+using such a user agent does not trigger two dns lookups on each request. The
+cache uses apcu, else files in the temporary directory, else in
+`files/botchallenge-cache`, never the options, that are all loaded on each
+request. When the dns is slow, the lookups are paused for ten minutes: the bot
+gets the link preview only meanwhile.
+
 ### Exempted search engines
 
 The plugin exempts by ip/cidr only: a user agent is declarative, so it cannot be

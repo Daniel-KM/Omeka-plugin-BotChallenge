@@ -15,6 +15,9 @@
             <file>tests/BotChallengeTest/TokenTest.php</file>
             <file>tests/BotChallengeTest/BotIpsTest.php</file>
             <file>tests/BotChallengeTest/MachineOutputTest.php</file>
+            <file>tests/BotChallengeTest/CacheTest.php</file>
+            <file>tests/BotChallengeTest/PreviewBotTest.php</file>
+            <file>tests/BotChallengeTest/ReverseDnsTest.php</file>
         </testsuite>
         <!-- Controller tests (need full Omeka app + test database) -->
         <testsuite name="controller">

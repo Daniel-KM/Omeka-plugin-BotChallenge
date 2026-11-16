@@ -79,6 +79,30 @@
 
     <div class="field">
         <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_preview_user_agents', __('Link preview bots')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formTextarea('botchallenge_preview_user_agents', get_option('botchallenge_preview_user_agents'), array('id' => 'botchallenge_preview_user_agents', 'rows' => 8, 'cols' => 60)) ?>
+            <p class="explanation">
+                <?= __('Parts of the user agent of the bots that build the previews of the shared links (social networks, messaging apps), one per line. They cannot solve the challenge, so they get a card with the metadata of the page (title, description, thumbnail), built without dispatching the page: a scraper using such a user agent gets nothing else and does not load the server.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
+            <?= $this->formLabel('botchallenge_exception_rdns', __('Bots verified by reverse dns')) ?>
+        </div>
+        <div class="inputs five columns omega">
+            <?= $this->formTextarea('botchallenge_exception_rdns', get_option('botchallenge_exception_rdns'), array('id' => 'botchallenge_exception_rdns', 'rows' => 3, 'cols' => 60)) ?>
+            <p class="explanation">
+                <?= __('One bot by line, as "part of the user agent = domain", for example "TelegramBot = ptr.telegram.org". The bot is excluded from the challenge when its ip resolves to a host of the domain and this host resolves back to its ip.') ?>
+            </p>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="two columns alpha">
             <?= $this->formLabel('botchallenge_interaction', __('Action of the visitor')) ?>
         </div>
         <div class="inputs five columns omega">

@@ -24,6 +24,12 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         // challenge is meaningless or harmful.
         'botchallenge_exception_paths' => self::DEFAULT_EXCEPTION_PATHS,
         'botchallenge_exception_ips' => '',
+        // Link preview bots (social networks, messaging apps): they get a card
+        // with the metadata of the page, never the page itself.
+        'botchallenge_preview_user_agents' => self::DEFAULT_PREVIEW_USER_AGENTS,
+        // Bots verified by their network (forward-confirmed reverse dns): part
+        // of the user agent = domain of the reverse dns of its ips.
+        'botchallenge_exception_rdns' => 'TelegramBot = ptr.telegram.org',
         'botchallenge_exception_bots' => '[]',
         // Ranges refreshed from the sources, by bot.
         'botchallenge_bot_ips' => '[]',
@@ -36,6 +42,11 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
      * Paths opened by default, one per line.
      */
     const DEFAULT_EXCEPTION_PATHS = "/.well-known\n/api\n/favicon.ico\n/files\n/iiif\n/iiif-presentation\n/oai-pmh-repository\n/robots.txt\n/security.txt\n/sitemap.xml";
+
+    /**
+     * Parts of the user agents of the link preview bots, one per line.
+     */
+    const DEFAULT_PREVIEW_USER_AGENTS = "Akkoma\nBluesky\nDiscordbot\nEmbedly\nfacebookexternalhit\nFriendica\nIframely\nLemmy\nLinkedInBot\nMastodon/\nMisskey\nPinterestbot\nPleroma\nredditbot\nSkypeUriPreview\nSlackbot\nTelegramBot\nTwitterbot\nvkShare\nWhatsApp";
 
     public function hookInstall()
     {
@@ -177,6 +188,8 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
         set_option('botchallenge_interaction', in_array($interaction, array('checkbox', 'button'), true) ? $interaction : 'none');
         set_option('botchallenge_trusted_proxies', implode("\n", BotChallenge_ClientIp::normalizeProxies($post['botchallenge_trusted_proxies'] ?? '')));
         set_option('botchallenge_exception_paths', trim($post['botchallenge_exception_paths'] ?? ''));
+        set_option('botchallenge_preview_user_agents', trim($post['botchallenge_preview_user_agents'] ?? ''));
+        set_option('botchallenge_exception_rdns', trim($post['botchallenge_exception_rdns'] ?? ''));
 
         $exceptionIps = trim($post['botchallenge_exception_ips'] ?? '');
         set_option('botchallenge_exception_ips', $exceptionIps);

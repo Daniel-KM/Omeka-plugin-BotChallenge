@@ -2,6 +2,18 @@
 
 class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Abstract
 {
+    /**
+     * Duration of the cache of the reverse dns verifications, by ip.
+     */
+    const RDNS_CACHE_SECONDS = 21600;
+
+    /**
+     * A reverse dns verification longer than that pauses the next ones.
+     */
+    const RDNS_SLOW_SECONDS = 2;
+
+    const RDNS_PAUSE_SECONDS = 600;
+
     public function routeShutdown(Zend_Controller_Request_Abstract $request)
     {
         // Skip CLI (background jobs, scripts).
@@ -65,6 +77,30 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             }
         }
 
+        $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
+
+        // Skip the bots verified by their network: the user agent announces a
+        // bot and the ip belongs to its domain (forward-confirmed reverse dns).
+        if ($this->isVerifiedByReverseDns($userAgent, $clientIp)) {
+            return;
+        }
+
+        // A link preview bot (social networks, messaging apps) cannot solve the
+        // challenge, and the ip of many of them is unknown (each instance of
+        // Mastodon fetches its previews). So it gets a card with the metadata of
+        // the page only, built without dispatching the page, so a scraper using
+        // this user agent gets nothing else and does not load the server.
+        if ($this->isPreviewBot($userAgent)) {
+            list($status, $html) = (new BotChallenge_LinkPreview())->render($request);
+            $this->getResponse()
+                ->setHttpResponseCode($status)
+                ->setHeader('Content-Type', 'text/html; charset=utf-8', true)
+                ->setHeader('Cache-Control', 'no-store', true)
+                ->setBody($html)
+                ->sendResponse();
+            exit;
+        }
+
         // Check cookie: format is "{timestamp}_{hmac}".
         $cookieValue = isset($_COOKIE['omeka_bot_challenge'])
             ? $_COOKIE['omeka_bot_challenge']
@@ -75,7 +111,6 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             $cookieLifetime = ((int) get_option('botchallenge_cookie_lifetime') ?: 7) * 86400;
             $timestamp = substr($cookieValue, 0, $pos);
             $hmac = substr($cookieValue, $pos + 1);
-            $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
             $ip = get_option('botchallenge_bind_ip')
                 ? $clientIp
                 : '';
@@ -111,6 +146,88 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             ->setRedirect($url, 302)
             ->sendResponse();
         exit;
+    }
+
+    /**
+     * Is the user agent a bot verified by its network?
+     *
+     * Each line of the option maps a part of the user agent to the domain of
+     * the reverse dns of its ips, for example "TelegramBot = ptr.telegram.org".
+     */
+    protected function isVerifiedByReverseDns(string $userAgent, string $ip): bool
+    {
+        if ($userAgent === '' || $ip === '') {
+            return false;
+        }
+        foreach (array_filter(array_map('trim', explode("\n", (string) $this->option('botchallenge_exception_rdns')))) as $line) {
+            $parts = array_map('trim', explode('=', $line, 2));
+            if (count($parts) === 2 && $parts[0] !== '' && stripos($userAgent, $parts[0]) !== false) {
+                return $this->verifyReverseDnsCached($ip, $parts[1]);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verify the reverse dns of an ip, with a cache and a pause when it is slow.
+     *
+     * The user agent is declarative, so a botnet may use the one of a verified
+     * bot to trigger two dns lookups on each request. The result is cached by
+     * ip, positive or not, and the lookups are paused when the dns is slow: the
+     * bot then gets the link preview only, that is cheap. The cache is not
+     * stored in the options, that are all loaded on each request.
+     */
+    protected function verifyReverseDnsCached(string $ip, string $domain): bool
+    {
+        $cache = $this->cache();
+        $key = 'rdns:' . $ip . ' ' . $domain;
+        $cached = $cache->get($key);
+        if ($cached !== null) {
+            return (bool) $cached;
+        }
+        if ($cache->get('rdns:paused')) {
+            return false;
+        }
+
+        $start = microtime(true);
+        $isVerified = $this->reverseDns()->verify($ip, $domain);
+        if (microtime(true) - $start > self::RDNS_SLOW_SECONDS) {
+            $cache->set('rdns:paused', true, self::RDNS_PAUSE_SECONDS);
+        }
+
+        $cache->set($key, $isVerified, self::RDNS_CACHE_SECONDS);
+        return $isVerified;
+    }
+
+    protected function isPreviewBot(string $userAgent): bool
+    {
+        if ($userAgent === '') {
+            return false;
+        }
+        foreach (explode("\n", (string) $this->option('botchallenge_preview_user_agents')) as $agent) {
+            $agent = trim($agent);
+            if ($agent !== '' && stripos($userAgent, $agent) !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected function option(string $name)
+    {
+        return get_option($name);
+    }
+
+    protected function cache(): BotChallenge_Cache
+    {
+        // The keys are distinct by installation, and the fallback directory is
+        // private to it.
+        return new BotChallenge_Cache(substr(sha1(BASE_DIR), 0, 12), FILES_DIR . '/botchallenge-cache');
+    }
+
+    protected function reverseDns(): BotChallenge_ReverseDns
+    {
+        return new BotChallenge_ReverseDns();
     }
 
     /**
@@ -157,19 +274,6 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
     }
 
     /**
-     * Whether the path matches an exception path, on a segment boundary.
-     *
-     * A prefix pattern ("/sso") matches itself and any sub-path ("/sso",
-     * "/sso/metadata"), but not a path that merely shares its prefix
-     * ("/ssoxxx"), so an exempted prefix cannot be widened by accident.
-     *
-     * A suffix pattern (a star then "/suggest") matches any path whose last
-     * segment is the given one ("/search/suggest"), for the machine endpoints
-     * that have no fixed prefix.
-     *
-     * @param string[] $exceptionPaths
-     */
-    /**
      * Check if the output is a response context (rss2, atom, omeka-xml…).
      *
      * The contexts are the default ones and the ones added by the plugins with
@@ -182,6 +286,19 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
             && Zend_Controller_Action_HelperBroker::getStaticHelper('contextSwitch')->hasContext($output);
     }
 
+    /**
+     * Whether the path matches an exception path, on a segment boundary.
+     *
+     * A prefix pattern ("/sso") matches itself and any sub-path ("/sso",
+     * "/sso/metadata"), but not a path that merely shares its prefix
+     * ("/ssoxxx"), so an exempted prefix cannot be widened by accident.
+     *
+     * A suffix pattern (a star then "/suggest") matches any path whose last
+     * segment is the given one ("/search/suggest"), for the machine endpoints
+     * that have no fixed prefix.
+     *
+     * @param string[] $exceptionPaths
+     */
     protected function pathIsExcepted(string $path, array $exceptionPaths): bool
     {
         foreach ($exceptionPaths as $exceptionPath) {
