@@ -13,6 +13,7 @@
             <file>tests/BotChallengeTest/IpInCidrTest.php</file>
             <file>tests/BotChallengeTest/GetClientIpTest.php</file>
             <file>tests/BotChallengeTest/TokenTest.php</file>
+            <file>tests/BotChallengeTest/NonceTest.php</file>
             <file>tests/BotChallengeTest/BotIpsTest.php</file>
             <file>tests/BotChallengeTest/MachineOutputTest.php</file>
             <file>tests/BotChallengeTest/CacheTest.php</file>
