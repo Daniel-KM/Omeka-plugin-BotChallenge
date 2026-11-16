@@ -220,9 +220,7 @@ class BotChallenge_Controller_Plugin_Challenge extends Zend_Controller_Plugin_Ab
 
     protected function cache(): BotChallenge_Cache
     {
-        // The keys are distinct by installation, and the fallback directory is
-        // private to it.
-        return new BotChallenge_Cache(substr(sha1(BASE_DIR), 0, 12), FILES_DIR . '/botchallenge-cache');
+        return BotChallenge_Cache::forInstallation();
     }
 
     protected function reverseDns(): BotChallenge_ReverseDns

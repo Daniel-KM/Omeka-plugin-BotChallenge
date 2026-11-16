@@ -48,6 +48,17 @@ class BotChallenge_Cache
     }
 
     /**
+     * Get the cache of the current installation.
+     *
+     * The keys are distinct by installation, and the fallback directory is
+     * private to it.
+     */
+    public static function forInstallation(): self
+    {
+        return new self(substr(sha1(BASE_DIR), 0, 12), FILES_DIR . '/botchallenge-cache');
+    }
+
+    /**
      * @return mixed|null Null when the key is missing or expired.
      */
     public function get(string $key)

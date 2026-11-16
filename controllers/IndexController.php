@@ -25,10 +25,15 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
             return $this->verify();
         }
 
-        $session = new Zend_Session_Namespace('BotChallenge');
-        $nonce = bin2hex(random_bytes(16));
-        $session->nonce = $nonce;
-        $session->nonceTime = time();
+        // The nonce is signed instead of stored in the session, so a bot that
+        // reaches the page stores nothing in it.
+        $nonce = BotChallenge_Token::createNonce(
+            time(),
+            bin2hex(random_bytes(16)),
+            $this->userAgent(),
+            $this->salt(),
+            $this->boundIp()
+        );
 
         // Validate redirect url: must start with "/" and not "//".
         $basePath = $this->getRequest()->getBaseUrl();
@@ -70,9 +75,11 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
     /**
      * Check the nonce posted by the client and deliver the cookie.
      *
-     * The nonce is single use and tied to the session, so the cookie cannot be
-     * obtained with a single request, and a harvested page is useless without
-     * its session.
+     * The nonce is signed for the client and single use, so the cookie cannot
+     * be obtained with a single request. A harvested nonce can be used once
+     * from another client with the same user agent, like the session cookie
+     * could be copied with the page before, and the ip is checked only when the
+     * option is set.
      */
     protected function verify()
     {
@@ -87,19 +94,28 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
         }
         $this->_helper->viewRenderer->setNoRender(true);
 
-        $session = new Zend_Session_Namespace('BotChallenge');
-        $expected = (string) (isset($session->nonce) ? $session->nonce : '');
-        $nonceTime = (int) (isset($session->nonceTime) ? $session->nonceTime : 0);
-
-        // Single use: consume the nonce whatever the result, so a failed or
-        // replayed check requires a new challenge page.
-        unset($session->nonce, $session->nonceTime);
+        $salt = $this->salt();
+        $userAgent = $this->userAgent();
+        $ip = $this->boundIp();
 
         $posted = (string) $this->getRequest()->getPost('nonce', '');
-        $elapsed = time() - $nonceTime;
-        if ($expected === ''
-            || !hash_equals($expected, $posted)
+        $nonceTime = BotChallenge_Token::nonceTime($posted, $userAgent, $salt, $ip);
+        $elapsed = time() - (int) $nonceTime;
+
+        // Single use: consume the nonce whatever the result, so a failed or
+        // replayed check requires a new challenge page. Without usable cache,
+        // a nonce can be replayed until its expiration.
+        $isReplayed = false;
+        if ($nonceTime !== null && $elapsed <= self::NONCE_LIFETIME) {
+            $cache = BotChallenge_Cache::forInstallation();
+            $key = 'nonce_' . hash('sha256', $posted);
+            $isReplayed = $cache->get($key) !== null;
+            $cache->set($key, 1, self::NONCE_LIFETIME);
+        }
+
+        if ($nonceTime === null
             || $elapsed > self::NONCE_LIFETIME
+            || $isReplayed
         ) {
             $response->setHttpResponseCode(403);
             $response->setBody(json_encode(array('status' => 'error')));
@@ -117,13 +133,9 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
             return $response;
         }
 
-        $salt = (string) get_option('botchallenge_salt');
         $cookieLifetime = ((int) get_option('botchallenge_cookie_lifetime') ?: 7) * 86400;
-        $ip = get_option('botchallenge_bind_ip')
-            ? BotChallenge_ClientIp::fromServer()
-            : '';
         $timestamp = (string) time();
-        $token = $timestamp . '_' . BotChallenge_Token::signature($timestamp, $this->userAgent(), $salt, $ip);
+        $token = $timestamp . '_' . BotChallenge_Token::signature($timestamp, $userAgent, $salt, $ip);
 
         // The cookie is set by the server, so it can be http only: the client
         // never needs to read it.
@@ -147,6 +159,21 @@ class BotChallenge_IndexController extends Omeka_Controller_AbstractActionContro
     public static function isTooEarly($elapsed, $delay)
     {
         return $elapsed < $delay - self::DELAY_TOLERANCE;
+    }
+
+    protected function salt(): string
+    {
+        return (string) get_option('botchallenge_salt');
+    }
+
+    /**
+     * The ip is used for the signatures only when the option is set.
+     */
+    protected function boundIp(): string
+    {
+        return get_option('botchallenge_bind_ip')
+            ? BotChallenge_ClientIp::fromServer()
+            : '';
     }
 
     protected function userAgent()
