@@ -113,13 +113,16 @@ network is not trusted.
 ### How the challenge works
 
 1. A visitor without a valid cookie is redirected to the challenge page, that
-   holds a single use nonce, tied to the session. The page delivers no cookie:
-   a plain request returns nothing usable.
+   holds a single use nonce, signed for the client. The page delivers no cookie:
+   a plain request returns nothing usable. The nonce is not stored in a session.
+   Note that Omeka Classic starts a session on each request anyway.
 2. The javascript checks the browser (headless detection), waits for the delay,
    asks for the action of the visitor if the option is set, then posts the nonce
    back.
-3. The server checks the nonce, consumes it, and sets the cookie itself. So the
-   cookie is `HttpOnly`: the client never needs to read it.
+3. The server checks the signature and the age of the nonce, consumes it, and
+   sets the cookie itself. So the cookie is `HttpOnly`: the client never needs
+   to read it. The used nonces are kept in the cache (apcu or files) until their
+   expiration, so a nonce cannot be replayed.
 
 The cookie holds a timestamp and a signature (HMAC-SHA256) covering that
 timestamp and the user agent, with the salt as key. Binding the user agent
@@ -151,8 +154,8 @@ without this check a client posting the answer immediately would get a cookie.
 
 Note that this binding is not a proof of identity, since a user agent is
 declarative: a client copying the header along with the cookie would pass. The
-barrier is the nonce, that forces each client to hold a session and to make the
-round trip.
+barrier is the nonce, that forces each client to load the page, to wait the
+delay and to make the round trip, then to keep the cookie.
 
 ### Link previews
 
