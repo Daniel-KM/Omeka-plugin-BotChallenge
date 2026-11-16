@@ -35,7 +35,7 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
     /**
      * Paths opened by default, one per line.
      */
-    const DEFAULT_EXCEPTION_PATHS = "/api\n/files\n/iiif\n/iiif-presentation\n/oai-pmh-repository\n/robots.txt\n/sitemap.xml";
+    const DEFAULT_EXCEPTION_PATHS = "/.well-known\n/api\n/favicon.ico\n/files\n/iiif\n/iiif-presentation\n/oai-pmh-repository\n/robots.txt\n/security.txt\n/sitemap.xml";
 
     public function hookInstall()
     {
@@ -99,6 +99,15 @@ class BotChallengePlugin extends Omeka_Plugin_AbstractPlugin
                 set_option($key, $value);
             }
         }
+
+        // Merge the default exception paths on each upgrade: they are machine
+        // endpoints that break the service when challenged, so a path added in
+        // a later version must reach the existing installs, that a merge done
+        // by version would miss. Custom paths are kept.
+        $paths = array_filter(array_map('trim', explode("\n", (string) get_option('botchallenge_exception_paths'))));
+        $paths = array_unique(array_merge($paths, array_filter(explode("\n", self::DEFAULT_EXCEPTION_PATHS))));
+        sort($paths);
+        set_option('botchallenge_exception_paths', implode("\n", $paths));
 
         // The ranges of the exempted bots are merged on each upgrade too: a fresh
         // version may bring new bundled ranges.

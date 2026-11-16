@@ -86,7 +86,8 @@ BotChallenge > Configure).
   is ignored. It is a simple obstacle, not a proof: the server cannot check that
   the click was real.
 - Trusted reverse proxies: the proxies in front of the server, see below.
-- Exception paths: /api, /files, /iiif, /oai-pmh-repository, /robots.txt, etc.
+- Exception paths: /.well-known, /api, /files, /iiif, /oai-pmh-repository,
+  /robots.txt, /security.txt, etc.
   A path starting with a star matches on the last segment, for example
   `*/suggest`. The feeds and the exports requested with the param `output`
   (rss2, atom, omeka-xml, dcmes-xml, and the formats added by the plugins) are
